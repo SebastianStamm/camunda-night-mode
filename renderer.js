@@ -62,8 +62,18 @@ export default {
     camera.rotation.x = Math.PI / 2;
     camera.rotation.order = "ZXY";
 
+    const movementVector = new THREE.Vector2(0, 0);
     function animate() {
       requestAnimationFrame(animate);
+
+      const move = movementVector
+        .clone()
+        .normalize()
+        .multiplyScalar(0.1)
+        .rotateAround(new THREE.Vector2(0, 0), camera.rotation.z);
+
+      camera.position.x += move.x;
+      camera.position.y += move.y;
 
       renderer.render(scene, camera);
     }
@@ -85,6 +95,8 @@ export default {
         pointerLocked = true;
       } else {
         pointerLocked = false;
+        movementVector.x = 0;
+        movementVector.y = 0;
       }
     };
 
@@ -100,6 +112,45 @@ export default {
         camera.rotation.x = Math.max(Math.min(camera.rotation.x, Math.PI), 0);
       }
     });
+
+    document.addEventListener(
+      "keydown",
+      function({ key }) {
+        if (pointerLocked) {
+          switch (key) {
+            case "w":
+              movementVector.y = 1;
+              break;
+            case "a":
+              movementVector.x = -1;
+              break;
+            case "s":
+              movementVector.y = -1;
+              break;
+            case "d":
+              movementVector.x = 1;
+              break;
+          }
+        }
+      },
+      false
+    );
+    document.addEventListener(
+      "keyup",
+      function({ key }) {
+        switch (key) {
+          case "w":
+          case "s":
+            movementVector.y = 0;
+            break;
+          case "a":
+          case "d":
+            movementVector.x = 0;
+            break;
+        }
+      },
+      false
+    );
 
     document.body.appendChild(renderer.domElement);
   }

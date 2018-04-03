@@ -66,9 +66,7 @@ function moveColliding(position, move, canvas) {
 }
 
 export default {
-  init: function(canvas) {
-    console.log("should render 3d level", canvas);
-
+  init: function(canvas, startPosition) {
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
 
@@ -78,12 +76,13 @@ export default {
     createLevel(canvas, scene);
 
     camera.position.z = 1.7;
-    camera.position.x = 5;
-    camera.position.y = -5;
+    camera.position.x = startPosition.x * scaleFactor;
+    camera.position.y = -startPosition.y * scaleFactor;
 
     window.camera = camera;
 
     camera.rotation.x = Math.PI / 2;
+    camera.rotation.z = -Math.PI / 2;
     camera.rotation.order = "ZXY";
 
     const movementVector = new THREE.Vector2(0, 0);

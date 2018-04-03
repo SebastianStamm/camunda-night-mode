@@ -87,13 +87,6 @@ const scaleFactor = 0.15;
       }
     });
 
-    canvasProcessing.applyThresholds(canvas);
-    canvasProcessing.removeUnneededEntities(canvas);
-
-    document.body.appendChild(canvas);
-
-    renderer.init(canvas);
-
     // convert bpmn to graph
     const nodes = viewer
       .get("elementRegistry")
@@ -117,9 +110,11 @@ const scaleFactor = 0.15;
         });
     });
 
-    const start = nodes.find(e =>
+    const startNode = nodes.find(e =>
       e.businessObject.$instanceOf("bpmn:StartEvent")
-    ).id;
+    );
+    const start = startNode.id;
+
     const { dist } = dijkstra(graph, start);
 
     const goal = nodes
@@ -144,5 +139,17 @@ const scaleFactor = 0.15;
     }
     console.log("player should go from", start, "to", goal);
     console.log(keyLocations, graph);
+
+    const startPosition = {
+      x: (startNode.x + offset.x + startNode.width / 2) * scaleFactor,
+      y: (startNode.y + offset.y + startNode.height / 2) * scaleFactor
+    };
+
+    canvasProcessing.applyThresholds(canvas);
+    canvasProcessing.removeUnneededEntities(canvas);
+
+    document.body.appendChild(canvas);
+
+    renderer.init(canvas, startPosition);
   });
 })();

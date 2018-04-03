@@ -6,7 +6,9 @@ import {
   dijkstra
 } from "./levelgenerator.js";
 
-const scaleFactor = 0.4;
+import * as canvasProcessing from "./canvasProcessing.js";
+
+const scaleFactor = 0.15;
 
 (async () => {
   const xml = await (await fetch("./bat.bpmn")).text();
@@ -50,7 +52,7 @@ const scaleFactor = 0.4;
 
     ctx.fillStyle = "white";
     ctx.strokeStyle = "white";
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 1;
 
     viewer.get("elementRegistry").forEach(elem => {
       if (
@@ -81,6 +83,9 @@ const scaleFactor = 0.4;
         ctx.stroke();
       }
     });
+
+    canvasProcessing.applyThresholds(canvas);
+    canvasProcessing.removeUnneededEntities(canvas);
 
     document.body.appendChild(canvas);
 

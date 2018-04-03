@@ -69,6 +69,38 @@ export default {
     }
     animate();
 
+    let pointerLocked = false;
+
+    renderer.domElement.addEventListener("click", function(evt) {
+      var elem = renderer.domElement;
+      elem.requestPointerLock =
+        elem.requestPointerLock ||
+        elem.mozRequestPointerLock ||
+        elem.webkitRequestPointerLock;
+      elem.requestPointerLock();
+    });
+
+    var pointerLockChange = function(evt) {
+      if (document.pointerLockElement === renderer.domElement) {
+        pointerLocked = true;
+      } else {
+        pointerLocked = false;
+      }
+    };
+
+    document.addEventListener("pointerlockchange", pointerLockChange, false);
+    renderer.domElement.addEventListener("mousemove", e => {
+      if (pointerLocked) {
+        const movementX =
+            e.movementX || e.mozMovementX || e.webkitMovementX || 0,
+          movementY = e.movementY || e.mozMovementY || e.webkitMovementY || 0;
+
+        camera.rotation.z -= movementX / 300;
+        camera.rotation.x -= movementY / 300;
+        camera.rotation.x = Math.max(Math.min(camera.rotation.x, Math.PI), 0);
+      }
+    });
+
     document.body.appendChild(renderer.domElement);
   }
 };

@@ -1,4 +1,4 @@
-import "https://unpkg.com/bpmn-js@0.27.6/dist/bpmn-viewer.development.js";
+import "./bpmn-viewer.development.js";
 import {
   getNodeFurthestAwayFrom,
   removeNodeFromGraph,
@@ -32,13 +32,13 @@ const scaleFactor = 0.15;
     })(viewer.get("elementRegistry"));
 
     const offset = {
-      x: -min.x + 1,
-      y: -min.y + 1
+      x: -min.x + 1 / scaleFactor,
+      y: -min.y + 1 / scaleFactor
     };
 
     const dimensions = {
-      x: (max.x - min.x + 2) * scaleFactor,
-      y: (max.y - min.y + 2) * scaleFactor
+      x: (max.x - min.x + 3 / scaleFactor) * scaleFactor,
+      y: (max.y - min.y + 3 / scaleFactor) * scaleFactor
     };
 
     const canvas = document.createElement("canvas");

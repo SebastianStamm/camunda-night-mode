@@ -1,7 +1,10 @@
+const scaleFactor = 1;
+const height = 4;
+
 function createLevel(canvas, scene) {
   const tiles = [];
   tiles[1] = {
-    geometry: new THREE.CubeGeometry(1, 1, 1),
+    geometry: new THREE.CubeGeometry(scaleFactor, scaleFactor, height),
     material: new THREE.MeshBasicMaterial({ color: 0xaaaaaa })
   };
 
@@ -24,9 +27,9 @@ function createLevel(canvas, scene) {
       const y = ~~(pxIdx / canvas.width);
 
       var tmesh = new THREE.Mesh(tiles[1].geometry, tiles[1].material);
-      tmesh.position.x = x;
-      tmesh.position.y = y;
-      tmesh.position.z = 0.5;
+      tmesh.position.x = x * scaleFactor;
+      tmesh.position.y = -y * scaleFactor;
+      tmesh.position.z = height / 2;
 
       tmesh.matrixAutoUpdate && tmesh.updateMatrix();
 
@@ -53,9 +56,9 @@ export default {
 
     createLevel(canvas, scene);
 
-    camera.position.z = 0.5;
+    camera.position.z = 1.7;
     camera.position.x = 5;
-    camera.position.y = 5;
+    camera.position.y = -5;
 
     window.camera = camera;
 
@@ -69,7 +72,7 @@ export default {
       const move = movementVector
         .clone()
         .normalize()
-        .multiplyScalar(0.1)
+        .multiplyScalar(0.2)
         .rotateAround(new THREE.Vector2(0, 0), camera.rotation.z);
 
       camera.position.x += move.x;

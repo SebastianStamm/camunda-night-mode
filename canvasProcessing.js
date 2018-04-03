@@ -11,9 +11,6 @@ export function applyThresholds(canvas) {
 
   for (let i = 0; i < data.length; i += 4) {
     const red = data[i];
-    const green = data[i + 1];
-    const blue = data[i + 2];
-    const alpha = data[i + 3];
     if (red > 0) {
       data[i] = 255;
       data[i + 1] = 255;

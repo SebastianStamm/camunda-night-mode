@@ -13,7 +13,7 @@ import * as canvasProcessing from "./canvasProcessing.js";
 const scaleFactor = 0.15;
 
 (async () => {
-  const xml = await (await fetch("./bat.bpmn")).text();
+  const xml = await (await fetch("./simple.bpmn")).text();
   const viewer = new BpmnJS();
   viewer.importXML(xml, () => {
     const { min, max } = (reg => {

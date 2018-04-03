@@ -40,8 +40,29 @@ function createLevel(canvas, scene) {
   mesh.add(new THREE.Mesh(meshs[0], tiles[1].material));
 
   scene.add(mesh);
+}
 
-  console.log(mesh);
+function moveColliding(position, move, canvas) {
+  const newPosition = {
+    x: position.x + move.x,
+    y: position.y + move.y
+  };
+
+  const ctx = canvas.getContext("2d");
+
+  if (
+    ctx.getImageData(Math.round(newPosition.x), Math.round(-position.y), 1, 1)
+      .data[0]
+  ) {
+    position.x = newPosition.x;
+  }
+
+  if (
+    ctx.getImageData(Math.round(position.x), Math.round(-newPosition.y), 1, 1)
+      .data[0]
+  ) {
+    position.y = newPosition.y;
+  }
 }
 
 export default {
@@ -75,8 +96,10 @@ export default {
         .multiplyScalar(0.2)
         .rotateAround(new THREE.Vector2(0, 0), camera.rotation.z);
 
-      camera.position.x += move.x;
-      camera.position.y += move.y;
+      moveColliding(camera.position, move, canvas);
+
+      // camera.position.x += move.x;
+      // camera.position.y += move.y;
 
       renderer.render(scene, camera);
     }

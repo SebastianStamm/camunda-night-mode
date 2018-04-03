@@ -6,6 +6,8 @@ import {
   dijkstra
 } from "./levelgenerator.js";
 
+import renderer from "./renderer.js";
+
 import * as canvasProcessing from "./canvasProcessing.js";
 
 const scaleFactor = 0.15;
@@ -44,6 +46,7 @@ const scaleFactor = 0.15;
     const canvas = document.createElement("canvas");
     canvas.setAttribute("width", dimensions.x);
     canvas.setAttribute("height", dimensions.y);
+    canvas.setAttribute("class", "scaled left");
 
     const ctx = canvas.getContext("2d");
 
@@ -88,6 +91,8 @@ const scaleFactor = 0.15;
     canvasProcessing.removeUnneededEntities(canvas);
 
     document.body.appendChild(canvas);
+
+    renderer.init(canvas);
 
     // convert bpmn to graph
     const nodes = viewer

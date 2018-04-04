@@ -142,38 +142,75 @@ const scaleFactor = 0.17;
       subGoal = keyRoom;
       i++;
     }
-    console.log("player should go from", start, "to", goal, goalNode);
+    console.log("player should go from", start, "to", goal);
     console.log(keyLocations, graph);
 
-    // color door of node
-    goalNode.incoming.forEach(elem => {
-      const start = {
-        x:
-          (elem.waypoints[elem.waypoints.length - 1].x + offset.x) *
-          scaleFactor,
-        y:
-          (elem.waypoints[elem.waypoints.length - 1].y + offset.y) * scaleFactor
+    // block all entries to nodes with access requirements
+    Object.keys(keyLocations).forEach((node, idx) => {
+      keyLocations[node] = {
+        unlockLocation: keyLocations[node],
+        blockedColor: idx
       };
-      const vector = new THREE.Vector2(
-        (elem.waypoints[elem.waypoints.length - 2].x + offset.x) * scaleFactor -
-          (elem.waypoints[elem.waypoints.length - 1].x + offset.x) *
+
+      const elem = viewer.get("elementRegistry").get(node);
+      elem.incoming.forEach(elem => {
+        const start = {
+          x:
+            (elem.waypoints[elem.waypoints.length - 1].x + offset.x) *
             scaleFactor,
-        (elem.waypoints[elem.waypoints.length - 2].y + offset.y) * scaleFactor -
-          (elem.waypoints[elem.waypoints.length - 1].y + offset.y) * scaleFactor
-      );
-
-      vector.normalize();
-
-      ctx.beginPath();
-      ctx.moveTo(Math.round(start.x), Math.round(start.y));
-      elem.waypoints.slice(1).forEach(({ x, y }) => {
-        ctx.lineTo(
-          Math.round(start.x + vector.x),
-          Math.round(start.y + vector.y)
+          y:
+            (elem.waypoints[elem.waypoints.length - 1].y + offset.y) *
+            scaleFactor
+        };
+        const vector = new THREE.Vector2(
+          (elem.waypoints[elem.waypoints.length - 2].x + offset.x) *
+            scaleFactor -
+            (elem.waypoints[elem.waypoints.length - 1].x + offset.x) *
+              scaleFactor,
+          (elem.waypoints[elem.waypoints.length - 2].y + offset.y) *
+            scaleFactor -
+            (elem.waypoints[elem.waypoints.length - 1].y + offset.y) *
+              scaleFactor
         );
+
+        vector.normalize();
+
+        ctx.beginPath();
+        ctx.moveTo(Math.round(start.x), Math.round(start.y));
+        elem.waypoints.slice(1).forEach(({ x, y }) => {
+          ctx.lineTo(
+            Math.round(start.x + vector.x),
+            Math.round(start.y + vector.y)
+          );
+        });
+        ctx.strokeStyle = "rgba(" + idx + ", 0, 0, 1)";
+        ctx.stroke();
       });
-      ctx.strokeStyle = "rgba(255, 0, 0, 1)";
-      ctx.stroke();
+      elem.outgoing.forEach(elem => {
+        const start = {
+          x: (elem.waypoints[0].x + offset.x) * scaleFactor,
+          y: (elem.waypoints[0].y + offset.y) * scaleFactor
+        };
+        const vector = new THREE.Vector2(
+          (elem.waypoints[1].x + offset.x) * scaleFactor -
+            (elem.waypoints[0].x + offset.x) * scaleFactor,
+          (elem.waypoints[1].y + offset.y) * scaleFactor -
+            (elem.waypoints[0].y + offset.y) * scaleFactor
+        );
+
+        vector.normalize();
+
+        ctx.beginPath();
+        ctx.moveTo(Math.round(start.x), Math.round(start.y));
+        elem.waypoints.slice(1).forEach(({ x, y }) => {
+          ctx.lineTo(
+            Math.round(start.x + vector.x),
+            Math.round(start.y + vector.y)
+          );
+        });
+        ctx.strokeStyle = "rgba(" + idx + ", 0, 0, 1)";
+        ctx.stroke();
+      });
     });
 
     const startPosition = {
@@ -183,6 +220,6 @@ const scaleFactor = 0.17;
 
     canvasProcessing.removeUnneededEntities(canvas);
 
-    // renderer.init(canvas, startPosition);
+    renderer.init(canvas, startPosition);
   });
 })();

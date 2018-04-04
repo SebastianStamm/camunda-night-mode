@@ -4,10 +4,15 @@ const scaleFactor = 1;
 const height = 4;
 
 function createLevel(canvas, scene) {
+  const wallShaderUniforms = {
+    uLight: {value: new THREE.Vector3(0.6, 0, 0)}
+  };
+
   const tiles = [];
   tiles[1] = {
     geometry: new THREE.CubeGeometry(scaleFactor, scaleFactor, height),
     material: new THREE.ShaderMaterial({
+      uniforms: wallShaderUniforms,
       vertexShader: document.getElementById('commonVertex').textContent,
       fragmentShader: document.getElementById('wallFragment').textContent
      })
@@ -88,7 +93,7 @@ function createLevel(canvas, scene) {
   );
   scene.add(floormesh2);
 
-  return { entities, meshs };
+  return { entities, meshs, wallShaderUniforms };
 }
 
 function moveColliding(position, move, canvas, state) {
@@ -128,7 +133,7 @@ export default {
     const renderer = new THREE.WebGLRenderer({antialias: true});
     renderer.setSize(750, 750);
 
-    const { entities, meshs: walls } = createLevel(canvas, scene);
+    const { entities, meshs: walls, wallShaderUniforms } = createLevel(canvas, scene);
     const state = {
       openDoors: []
     };
@@ -153,6 +158,7 @@ export default {
       }
     }
 
+    const started = Date.now();
     function animate() {
       requestAnimationFrame(animate);
 
@@ -168,6 +174,9 @@ export default {
         updateState(entity.update(camera.position, state));
       });
 
+      // make light glow
+      const delta = Date.now() - started;
+      wallShaderUniforms.uLight.value.x = (Math.sin(delta / 3000 * 2 * Math.PI) + 1) / 2;
       renderer.render(scene, camera);
     }
     animate();

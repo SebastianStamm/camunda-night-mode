@@ -1,3 +1,5 @@
+import Entity from "./entities/index.js";
+
 const scaleFactor = 1;
 const height = 4;
 
@@ -8,8 +10,8 @@ function createLevel(canvas, scene) {
     material: new THREE.MeshBasicMaterial({ color: 0xaaaaaa })
   };
 
-  const meshs = [];
-  meshs.push(new THREE.Geometry());
+  let meshs = [];
+  const entities = [];
 
   const mesh = new THREE.Object3D();
 
@@ -20,11 +22,15 @@ function createLevel(canvas, scene) {
 
   for (let i = 0; i < data.length; i += 4) {
     const red = data[i];
-    if (red === 0) {
+    const entityType = data[i + 1];
+    const entityParam = data[i + 2];
+
+    const pxIdx = i / 4;
+    const x = pxIdx % canvas.width;
+    const y = ~~(pxIdx / canvas.width);
+
+    if (red !== 255) {
       // should add a wall to this position
-      const pxIdx = i / 4;
-      const x = pxIdx % canvas.width;
-      const y = ~~(pxIdx / canvas.width);
 
       var tmesh = new THREE.Mesh(tiles[1].geometry, tiles[1].material);
       tmesh.position.x = x * scaleFactor;
@@ -33,16 +39,36 @@ function createLevel(canvas, scene) {
 
       tmesh.matrixAutoUpdate && tmesh.updateMatrix();
 
-      meshs[0].merge(tmesh.geometry, tmesh.matrix);
+      if (!meshs[red]) {
+        meshs[red] = new THREE.Geometry();
+      }
+      meshs[red].merge(tmesh.geometry, tmesh.matrix);
+    }
+
+    if (entityType !== 0 && entityType !== 255) {
+      const entity = new Entity[entityType](entityParam);
+
+      const container = new THREE.Object3D();
+      container.position.x = x * scaleFactor;
+      container.position.y = -y * scaleFactor;
+      container.add(entity.mesh);
+      scene.add(container);
+
+      entities.push(entity);
     }
   }
 
-  mesh.add(new THREE.Mesh(meshs[0], tiles[1].material));
+  meshs = meshs.map(mesh => new THREE.Mesh(mesh, tiles[1].material));
+  meshs.forEach(wallMesh => {
+    mesh.add(wallMesh);
+  });
 
   scene.add(mesh);
+
+  return { entities, meshs };
 }
 
-function moveColliding(position, move, canvas) {
+function moveColliding(position, move, canvas, state) {
   const newPosition = {
     x: position.x + move.x,
     y: position.y + move.y
@@ -50,17 +76,23 @@ function moveColliding(position, move, canvas) {
 
   const ctx = canvas.getContext("2d");
 
-  if (
-    ctx.getImageData(Math.round(newPosition.x), Math.round(-position.y), 1, 1)
-      .data[0]
-  ) {
+  const cx = ctx.getImageData(
+    Math.round(newPosition.x),
+    Math.round(-position.y),
+    1,
+    1
+  ).data[0];
+  if (cx === 255 || state.openDoors.includes(cx)) {
     position.x = newPosition.x;
   }
 
-  if (
-    ctx.getImageData(Math.round(position.x), Math.round(-newPosition.y), 1, 1)
-      .data[0]
-  ) {
+  const cy = ctx.getImageData(
+    Math.round(position.x),
+    Math.round(-newPosition.y),
+    1,
+    1
+  ).data[0];
+  if (cy === 255 || state.openDoors.includes(cy)) {
     position.y = newPosition.y;
   }
 }
@@ -73,32 +105,45 @@ export default {
     const renderer = new THREE.WebGLRenderer();
     renderer.setSize(750, 750);
 
-    createLevel(canvas, scene);
+    const { entities, meshs: walls } = createLevel(canvas, scene);
+    const state = {
+      openDoors: []
+    };
 
     camera.position.z = 1.7;
     camera.position.x = startPosition.x * scaleFactor;
     camera.position.y = -startPosition.y * scaleFactor;
-
-    window.camera = camera;
 
     camera.rotation.x = Math.PI / 2;
     camera.rotation.z = -Math.PI / 2;
     camera.rotation.order = "ZXY";
 
     const movementVector = new THREE.Vector2(0, 0);
+
+    function updateState(change) {
+      if (change) {
+        console.log("updating state", change);
+        if (change.action === "openDoor") {
+          state.openDoors.push(change.id);
+          walls[change.id].parent.remove(walls[change.id]);
+        }
+      }
+    }
+
     function animate() {
       requestAnimationFrame(animate);
 
       const move = movementVector
         .clone()
         .normalize()
-        .multiplyScalar(0.2)
+        .multiplyScalar(0.4)
         .rotateAround(new THREE.Vector2(0, 0), camera.rotation.z);
 
-      moveColliding(camera.position, move, canvas);
+      moveColliding(camera.position, move, canvas, state);
 
-      // camera.position.x += move.x;
-      // camera.position.y += move.y;
+      entities.forEach(entity => {
+        updateState(entity.update(camera.position, state));
+      });
 
       renderer.render(scene, camera);
     }

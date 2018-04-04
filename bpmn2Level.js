@@ -149,7 +149,7 @@ const scaleFactor = 0.17;
     Object.keys(keyLocations).forEach((node, idx) => {
       keyLocations[node] = {
         unlockLocation: keyLocations[node],
-        blockedColor: idx
+        blockedColor: idx + 1
       };
 
       const elem = viewer.get("elementRegistry").get(node);
@@ -183,7 +183,7 @@ const scaleFactor = 0.17;
             Math.round(start.y + vector.y)
           );
         });
-        ctx.strokeStyle = "rgba(" + idx + ", 0, 0, 1)";
+        ctx.strokeStyle = "rgba(" + (idx + 1) + ", 0, 0, 1)";
         ctx.stroke();
       });
       elem.outgoing.forEach(elem => {
@@ -208,7 +208,7 @@ const scaleFactor = 0.17;
             Math.round(start.y + vector.y)
           );
         });
-        ctx.strokeStyle = "rgba(" + idx + ", 0, 0, 1)";
+        ctx.strokeStyle = "rgba(" + (idx + 1) + ", 0, 0, 1)";
         ctx.stroke();
       });
 
@@ -219,7 +219,7 @@ const scaleFactor = 0.17;
       const unlocker = ctx.createImageData(1, 1);
       unlocker.data[0] = 255;
       unlocker.data[1] = 1;
-      unlocker.data[2] = idx;
+      unlocker.data[2] = idx + 1;
       unlocker.data[3] = 255;
 
       ctx.putImageData(

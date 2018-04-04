@@ -12,6 +12,44 @@
   canvas {
     float: right;
   }
+
+  shader {
+    display: none;
+  }
 </style>
 <script type="application/javascript" src="three.js"></script>
 <script type="module" src="index.js"></script>
+
+<shader id="floorVertex">
+  varying vec2 vUv;
+  varying vec3 vCol;
+  varying vec4 vPosition;
+  void main() {
+    vUv = uv;
+    vCol = vec3(1.0,1.0,1.0);
+    vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+    gl_Position = projectionMatrix * mvPosition;
+    vPosition = modelMatrix * vec4( position, 1.0 );
+  }
+</shader>
+
+<shader id="floorFragment">
+  varying vec2 vUv;
+  varying vec3 vCol;
+  varying vec4 vPosition;
+  void main() {
+    vec3 color = vec3(0.0);
+    float lineThickness = 0.02;
+    if(fract(vPosition.x + 0.5) < lineThickness || fract(vPosition.x + 0.5) > 1.0 - lineThickness || fract(vPosition.y + 0.5) < lineThickness || fract(vPosition.y + 0.5) > 1.0 - lineThickness) {
+      color = vec3(0.3,0.3,0.3);
+    } else {
+      color = vec3(0.1, 0.1, 0.1);
+    }
+
+    float distance = length(vPosition - vec4(cameraPosition.x, cameraPosition.y, 0.0, 1.0));
+
+    color = mix(color, vec3(0.1, 0.1, 0.1), distance / 10.0);
+
+    gl_FragColor = vec4(color, 1.0);
+  }
+</shader>

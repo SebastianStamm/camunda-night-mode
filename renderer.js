@@ -65,6 +65,26 @@ function createLevel(canvas, scene) {
 
   scene.add(mesh);
 
+  // add floor
+  const floorgeometry2 = new THREE.PlaneGeometry(
+    canvas.width,
+    canvas.height,
+    1,
+    1
+  );
+  const floormaterial2 = new THREE.ShaderMaterial({
+    vertexShader: document.getElementById('floorVertex').textContent,
+    fragmentShader: document.getElementById('floorFragment').textContent
+  });
+
+  const floormesh2 = new THREE.Mesh(floorgeometry2, floormaterial2);
+  floormesh2.position.set(
+    canvas.width / 2 + 0.5,
+    -canvas.height / 2 - 0.5,
+    -0.01
+  );
+  scene.add(floormesh2);
+
   return { entities, meshs };
 }
 
@@ -102,7 +122,7 @@ export default {
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
 
-    const renderer = new THREE.WebGLRenderer();
+    const renderer = new THREE.WebGLRenderer({antialias: true});
     renderer.setSize(750, 750);
 
     const { entities, meshs: walls } = createLevel(canvas, scene);

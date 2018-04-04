@@ -7,7 +7,10 @@ function createLevel(canvas, scene) {
   const tiles = [];
   tiles[1] = {
     geometry: new THREE.CubeGeometry(scaleFactor, scaleFactor, height),
-    material: new THREE.MeshBasicMaterial({ color: 0xaaaaaa })
+    material: new THREE.ShaderMaterial({
+      vertexShader: document.getElementById('commonVertex').textContent,
+      fragmentShader: document.getElementById('wallFragment').textContent
+     })
   };
 
   let meshs = [];
@@ -73,7 +76,7 @@ function createLevel(canvas, scene) {
     1
   );
   const floormaterial2 = new THREE.ShaderMaterial({
-    vertexShader: document.getElementById('floorVertex').textContent,
+    vertexShader: document.getElementById('commonVertex').textContent,
     fragmentShader: document.getElementById('floorFragment').textContent
   });
 

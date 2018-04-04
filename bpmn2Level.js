@@ -211,6 +211,26 @@ const scaleFactor = 0.17;
         ctx.strokeStyle = "rgba(" + idx + ", 0, 0, 1)";
         ctx.stroke();
       });
+
+      const unlockElem = viewer
+        .get("elementRegistry")
+        .get(keyLocations[node].unlockLocation);
+
+      const unlocker = ctx.createImageData(1, 1);
+      unlocker.data[0] = 255;
+      unlocker.data[1] = 1;
+      unlocker.data[2] = idx;
+      unlocker.data[3] = 255;
+
+      ctx.putImageData(
+        unlocker,
+        Math.round(
+          (unlockElem.x + offset.x + unlockElem.width / 2) * scaleFactor
+        ),
+        Math.round(
+          (unlockElem.y + offset.y + unlockElem.height / 2) * scaleFactor
+        )
+      );
     });
 
     const startPosition = {

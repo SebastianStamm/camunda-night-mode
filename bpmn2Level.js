@@ -10,7 +10,7 @@ import renderer from "./renderer.js";
 
 import * as canvasProcessing from "./canvasProcessing.js";
 
-const scaleFactor = 0.15;
+const scaleFactor = 0.17;
 
 (async () => {
   const xml = await (await fetch("./bat.bpmn")).text();
@@ -48,14 +48,17 @@ const scaleFactor = 0.15;
     canvas.setAttribute("height", dimensions.y);
     canvas.setAttribute("class", "scaled left");
 
+    document.body.appendChild(canvas);
+
     const ctx = canvas.getContext("2d");
+    // ctx.translate(0.5, 0.5);
 
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, dimensions.x, dimensions.y);
 
     ctx.fillStyle = "white";
     ctx.strokeStyle = "white";
-    ctx.lineWidth = 1;
+    ctx.lineWidth = 2;
 
     viewer.get("elementRegistry").forEach(elem => {
       if (
@@ -63,24 +66,25 @@ const scaleFactor = 0.15;
         elem.businessObject.$instanceOf("bpmn:FlowNode")
       ) {
         ctx.fillRect(
-          (elem.x + offset.x) * scaleFactor,
-          (elem.y + offset.y) * scaleFactor,
-          elem.width * scaleFactor,
-          elem.height * scaleFactor
+          Math.round((elem.x + offset.x) * scaleFactor),
+          Math.round((elem.y + offset.y) * scaleFactor),
+          Math.round(elem.width * scaleFactor),
+          Math.round(elem.height * scaleFactor)
         );
       }
       if (
         elem.type !== "label" &&
         elem.businessObject.$instanceOf("bpmn:SequenceFlow")
       ) {
+        ctx.beginPath();
         ctx.moveTo(
-          (elem.waypoints[0].x + offset.x) * scaleFactor,
-          (elem.waypoints[0].y + offset.y) * scaleFactor
+          Math.round((elem.waypoints[0].x + offset.x) * scaleFactor),
+          Math.round((elem.waypoints[0].y + offset.y) * scaleFactor)
         );
         elem.waypoints.slice(1).forEach(({ x, y }) => {
           ctx.lineTo(
-            (x + offset.x) * scaleFactor,
-            (y + offset.y) * scaleFactor
+            Math.round((x + offset.x) * scaleFactor),
+            Math.round((y + offset.y) * scaleFactor)
           );
         });
         ctx.stroke();
@@ -117,11 +121,12 @@ const scaleFactor = 0.15;
 
     const { dist } = dijkstra(graph, start);
 
-    const goal = nodes
+    const goalNode = nodes
       .filter(e => e.businessObject.$instanceOf("bpmn:EndEvent"))
-      .map(node => [node.id, dist[node.id]])
+      .map(node => [node, dist[node.id]])
       .sort((a, b) => b[1] - a[1])[0][0];
 
+    const goal = goalNode.id;
     let subGoal = goal;
     let subGraph = graph;
 
@@ -137,19 +142,47 @@ const scaleFactor = 0.15;
       subGoal = keyRoom;
       i++;
     }
-    console.log("player should go from", start, "to", goal);
+    console.log("player should go from", start, "to", goal, goalNode);
     console.log(keyLocations, graph);
+
+    // color door of node
+    goalNode.incoming.forEach(elem => {
+      const start = {
+        x:
+          (elem.waypoints[elem.waypoints.length - 1].x + offset.x) *
+          scaleFactor,
+        y:
+          (elem.waypoints[elem.waypoints.length - 1].y + offset.y) * scaleFactor
+      };
+      const vector = new THREE.Vector2(
+        (elem.waypoints[elem.waypoints.length - 2].x + offset.x) * scaleFactor -
+          (elem.waypoints[elem.waypoints.length - 1].x + offset.x) *
+            scaleFactor,
+        (elem.waypoints[elem.waypoints.length - 2].y + offset.y) * scaleFactor -
+          (elem.waypoints[elem.waypoints.length - 1].y + offset.y) * scaleFactor
+      );
+
+      vector.normalize();
+
+      ctx.beginPath();
+      ctx.moveTo(Math.round(start.x), Math.round(start.y));
+      elem.waypoints.slice(1).forEach(({ x, y }) => {
+        ctx.lineTo(
+          Math.round(start.x + vector.x),
+          Math.round(start.y + vector.y)
+        );
+      });
+      ctx.strokeStyle = "rgba(255, 0, 0, 1)";
+      ctx.stroke();
+    });
 
     const startPosition = {
       x: (startNode.x + offset.x + startNode.width / 2) * scaleFactor,
       y: (startNode.y + offset.y + startNode.height / 2) * scaleFactor
     };
 
-    canvasProcessing.applyThresholds(canvas);
     canvasProcessing.removeUnneededEntities(canvas);
 
-    document.body.appendChild(canvas);
-
-    renderer.init(canvas, startPosition);
+    // renderer.init(canvas, startPosition);
   });
 })();

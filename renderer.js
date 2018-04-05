@@ -170,7 +170,7 @@ export default {
       const move = movementVector
         .clone()
         .normalize()
-        .multiplyScalar(0.4)
+        .multiplyScalar(0.25)
         .rotateAround(new THREE.Vector2(0, 0), camera.rotation.z);
 
       moveColliding(camera.position, move, canvas, state);

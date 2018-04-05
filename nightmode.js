@@ -9,10 +9,12 @@ import {
 import renderer from "./renderer.js";
 
 import * as canvasProcessing from "./canvasProcessing.js";
+import intro from './intro.js';
 
 const scaleFactor = 0.2;
 
-window.enterNightMode = xml => {
+window.enterNightMode = async xml => {
+  await intro();
   const viewer = new BpmnJS();
   viewer.importXML(xml, () => {
     const { min, max } = (reg => {

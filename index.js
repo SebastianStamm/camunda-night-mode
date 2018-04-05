@@ -4,7 +4,7 @@ define(['angular'], function(angular) {
   ngModule.config(['ViewsProvider', function(ViewsProvider) {
     ViewsProvider.registerDefaultView('cockpit.processDefinition.runtime.action', {
       id: 'cockpit.nightmode',
-      template: '<a class="btn btn-default btn-toolbar" ng-click="startNight()">&#x1F319;&#xFE0E;</a>',
+      template: '<a class="btn btn-default btn-toolbar" ng-click="startNight()" tooltip="Activate Nightmode" tooltip-placement="left">&#x1F319;&#xFE0E;</a>',
       controller: ['$scope', function($scope) {
         $scope.startNight = () => {
           window.enterNightMode($scope.processData.$providers.local.bpmn20Xml.data.value.bpmn20Xml);
@@ -23,6 +23,8 @@ define(['angular'], function(angular) {
 
   document.head.appendChild(nightModeScript);
   document.head.appendChild(THREE);
+
+  window.speechSynthesis.getVoices();
 
   return ngModule;
 });

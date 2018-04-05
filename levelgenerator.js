@@ -51,7 +51,7 @@ export function getNodeFurthestAwayFrom(graph, ...nodes) {
   let currentNode = undefined;
   Object.keys(graph).forEach(node => {
     const d = dist.reduce((acc, curr) => acc + curr[node], 0);
-    if(d > currentMax) {
+    if(d > currentMax && d !== Infinity) {
       currentMax = d;
       currentNode = node;
     }

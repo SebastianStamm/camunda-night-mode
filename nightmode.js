@@ -143,14 +143,18 @@ window.enterNightMode = xml => {
     const keyLocations = {};
 
     let i = 0;
-    while (isNodeReachable(subGraph, start, subGoal) && i < 100) {
+    while (i < 100) {
       const keyRoom = getNodeFurthestAwayFrom(subGraph, start, subGoal);
       subGraph = removeNodeFromGraph(subGraph, subGoal);
 
-      keyLocations[subGoal] = keyRoom;
+      if(isNodeReachable(subGraph, start, keyRoom)) {
+        keyLocations[subGoal] = keyRoom;
 
-      subGoal = keyRoom;
-      i++;
+        subGoal = keyRoom;
+        i++;
+      } else {
+        break;
+      }
     }
     console.log("player should go from", start, "to", goal);
     console.log(keyLocations, graph);

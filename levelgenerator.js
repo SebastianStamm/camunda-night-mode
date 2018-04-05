@@ -27,6 +27,9 @@ export function dijkstra(graph, start) {
   while(unvisited.size) {
     const u = getNodeWithMinDist();
 
+    if(!u) {
+      break;
+    }
     unvisited.delete(u);
 
     graph[u].forEach(v => {

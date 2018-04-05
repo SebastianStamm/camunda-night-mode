@@ -129,11 +129,14 @@ function moveColliding(position, move, canvas, state) {
 
 export default {
   init: function(canvas, startPosition) {
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+    const camera = new THREE.PerspectiveCamera(45, width / height, 0.01, 100);
 
     const renderer = new THREE.WebGLRenderer({antialias: true});
-    renderer.setSize(750, 750);
+    renderer.setSize(width, height);
 
     const { entities, meshs: walls, wallShaderUniforms } = createLevel(canvas, scene);
     const state = {
@@ -256,6 +259,21 @@ export default {
       false
     );
 
+    window.addEventListener('resize', () => {
+      console.log('changing size');
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+    });
+
+    renderer.domElement.style.position = 'fixed';
+    renderer.domElement.style.zIndex = '99999';
+    renderer.domElement.style.top = '0';
+    renderer.domElement.style.left = '0';
+
     document.body.appendChild(renderer.domElement);
+
+    renderer.domElement.requestPointerLock();
+    renderer.domElement.webkitRequestFullscreen();
   }
 };

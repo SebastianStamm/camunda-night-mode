@@ -1,5 +1,7 @@
 import Entity from "./entities/index.js";
 
+import * as shaders from './shaders.js';
+
 const scaleFactor = 1;
 const height = 4;
 
@@ -13,8 +15,8 @@ function createLevel(canvas, scene) {
     geometry: new THREE.CubeGeometry(scaleFactor, scaleFactor, height),
     material: new THREE.ShaderMaterial({
       uniforms: wallShaderUniforms,
-      vertexShader: document.getElementById('commonVertex').textContent,
-      fragmentShader: document.getElementById('wallFragment').textContent
+      vertexShader: shaders.commonVertex,
+      fragmentShader: shaders.wallFragment
      })
   };
 
@@ -81,8 +83,8 @@ function createLevel(canvas, scene) {
     1
   );
   const floormaterial2 = new THREE.ShaderMaterial({
-    vertexShader: document.getElementById('commonVertex').textContent,
-    fragmentShader: document.getElementById('floorFragment').textContent
+    vertexShader: shaders.commonVertex,
+    fragmentShader: shaders.floorFragment
   });
 
   const floormesh2 = new THREE.Mesh(floorgeometry2, floormaterial2);

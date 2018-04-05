@@ -1,11 +1,3 @@
-// import {
-//   getNodeFurthestAwayFrom,
-//   removeNodeFromGraph,
-//   isNodeReachable
-// } from "./levelgenerator.js";
-
-// import "./bpmn2Level.js";
-
 import "./bpmn-viewer.development.js";
 import {
   getNodeFurthestAwayFrom,
@@ -18,7 +10,7 @@ import renderer from "./renderer.js";
 
 import * as canvasProcessing from "./canvasProcessing.js";
 
-const scaleFactor = 0.17;
+const scaleFactor = 0.2;
 
 window.enterNightMode = xml => {
   const viewer = new BpmnJS();
@@ -35,6 +27,18 @@ window.enterNightMode = xml => {
           min.y = Math.min(min.y, elem.y);
           max.x = Math.max(max.x, elem.x + elem.width);
           max.y = Math.max(max.y, elem.y + elem.height);
+        }
+
+        if(elem.type === 'bpmn:SequenceFlow') {
+          const minX = Math.min(...elem.waypoints.map(({x}) => x));
+          const maxX = Math.max(...elem.waypoints.map(({x}) => x));
+          const minY = Math.min(...elem.waypoints.map(({y}) => y));
+          const maxY = Math.max(...elem.waypoints.map(({y}) => y));
+
+          min.x = Math.min(min.x, minX - 8);
+          min.y = Math.min(min.y, minY - 8);
+          max.x = Math.max(max.x, maxX - 8);
+          max.y = Math.max(max.y, maxY - 8);
         }
       });
       return { min, max };
@@ -53,12 +57,11 @@ window.enterNightMode = xml => {
     const canvas = document.createElement("canvas");
     canvas.setAttribute("width", dimensions.x);
     canvas.setAttribute("height", dimensions.y);
-    canvas.setAttribute("class", "scaled left");
+    canvas.setAttribute("style", "position: fixed; z-index: 999; transform: scale(5); transform-origin: 0 0; image-rendering: pixelated;");
 
     document.body.appendChild(canvas);
 
     const ctx = canvas.getContext("2d");
-    // ctx.translate(0.5, 0.5);
 
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, dimensions.x, dimensions.y);
@@ -160,7 +163,8 @@ window.enterNightMode = xml => {
       };
 
       const elem = viewer.get("elementRegistry").get(node);
-      elem.incoming.forEach(elem => {
+
+      elem.incoming.filter(({type}) => type === 'bpmn:SequenceFlow').forEach(elem => {
         const start = {
           x:
             (elem.waypoints[elem.waypoints.length - 1].x + offset.x) *
@@ -193,7 +197,7 @@ window.enterNightMode = xml => {
         ctx.strokeStyle = "rgba(" + (idx + 1) + ", 0, 0, 1)";
         ctx.stroke();
       });
-      elem.outgoing.forEach(elem => {
+      elem.outgoing.filter(({type}) => type === 'bpmn:SequenceFlow').forEach(elem => {
         const start = {
           x: (elem.waypoints[0].x + offset.x) * scaleFactor,
           y: (elem.waypoints[0].y + offset.y) * scaleFactor

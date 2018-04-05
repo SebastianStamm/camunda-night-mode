@@ -31,7 +31,6 @@ function sayPowerCritical() {
     window.setTimeout(startShaking, 3000);
     window.setTimeout(sayEnteringEmergency, 5000);
     window.setTimeout(fadeToBlack, 10000);
-
   }, 3000);
 }
 
@@ -48,7 +47,12 @@ function startShaking() {
     }
 
     document.body.style.transform = `scale(${zoom}) translate(${offX}px, ${offY}px)`;
-    requestAnimationFrame(animate);
+
+    if(intensity > 80) {
+      document.body.style.transform = '';
+    } else {
+      requestAnimationFrame(animate);
+    }
   }
 
   requestAnimationFrame(animate);
@@ -56,6 +60,7 @@ function startShaking() {
 
 function fadeToBlack() {
   const blackScreen = document.createElement('div');
+  blackScreen.setAttribute('id', 'blackscreen');
   blackScreen.style.background = 'white';
   blackScreen.style.position = 'fixed';
   blackScreen.style.zIndex = '9998';
@@ -69,7 +74,60 @@ function fadeToBlack() {
 
   window.setTimeout(() => {
     blackScreen.style.opacity = '1';
+    window.setTimeout(restoreBackground, 1100);
   }, 100);
+}
+
+function restoreBackground() {
+  document.body.style.transition = '';
+
+  window.setTimeout(() => {
+    document.body.style.filter="";
+    document.body.style.background = 'white';
+    document.getElementById('blackscreen').style.background = 'black';
+    window.setTimeout(showCamundaPresents, 100);
+  }, 100);
+}
+
+function showCamundaPresents() {
+  const blackScreen = document.getElementById('blackscreen');
+
+  const content = document.createElement('div');
+
+  const logo = document.createElement('div');
+  logo.innerHTML = '<div cam-widget-header style="border-top: 0; background-color: transparent; box-shadow: none; font-size: 300px; display: inline-block; margin-left: calc(50vw - 650px); margin-top: calc(50vh - 200px);"><span class="brand-logo" style="filter: drop-shadow(0 0 10px #844);"></span> <span style="font-size: 0.7em; vertical-align: text-top; color: #ddd; filter: drop-shadow(0px 0px 5px #fff);">Camunda</span></div>';
+  content.appendChild(logo);
+  logo.style.transition = 'opacity 2s';
+  logo.style.opacity = '0';
+
+
+  const presents = document.createElement('div');
+  presents.style.fontSize='80px';
+  presents.style.color= '#ddd';
+  presents.style.marginLeft= 'calc(50vw + 450px)';
+  presents.style.marginTop= 'calc(50vh + 80px)';
+  presents.style.filter= 'drop-shadow(0 0 3px)';
+  presents.style.transition = 'opacity 2s';
+  presents.style.opacity = '0';
+
+  presents.textContent = 'presents';
+  content.appendChild(presents);
+
+  blackScreen.appendChild(content);
+
+  window.setTimeout(() => {
+    logo.style.opacity = '1';
+  }, 100);
+
+  window.setTimeout(() => {
+    presents.style.opacity = '1';
+  }, 2500);
+
+
+  window.setTimeout(() => {
+    logo.style.opacity = '0';
+    presents.style.opacity = '0';
+  }, 5000);
 }
 
 function sayEnteringEmergency() {

@@ -164,6 +164,9 @@ export default {
         console.log("updating state", change);
         if (change.action === "openDoor") {
           state.openDoors.push(change.id);
+          floorShaderUniforms.uRippleCenter.value.x = camera.position.x;
+          floorShaderUniforms.uRippleCenter.value.y = camera.position.y;
+          floorShaderUniforms.uRippleProgress.value = 0;
         }
       }
     }
@@ -248,12 +251,6 @@ export default {
               break;
             case "d":
               movementVector.x = 1;
-              break;
-            case ' ':
-              console.log('should ripple', camera.position.x, camera.position.y);
-              floorShaderUniforms.uRippleCenter.value.x = camera.position.x;
-              floorShaderUniforms.uRippleCenter.value.y = camera.position.y;
-              floorShaderUniforms.uRippleProgress.value = 0;
               break;
           }
         }

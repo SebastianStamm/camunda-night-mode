@@ -27,14 +27,6 @@ function sayPowerCritical() {
   utterThis.rate = .9;
 
   synth.speak(utterThis);
-
-  document.removeEventListener('keydown', sayPowerCritical);
-
-  window.setTimeout(() => {
-    window.setTimeout(startShaking, 3000);
-    window.setTimeout(sayEnteringEmergency, 5000);
-    window.setTimeout(fadeToBlack, 10000);
-  }, 3000);
 }
 
 function startShaking() {
@@ -77,7 +69,6 @@ function fadeToBlack() {
 
   window.setTimeout(() => {
     blackScreen.style.opacity = '1';
-    window.setTimeout(restoreBackground, 1100);
   }, 100);
 }
 
@@ -88,7 +79,6 @@ function restoreBackground() {
     document.body.style.filter="";
     document.body.style.background = 'white';
     document.getElementById('blackscreen').style.background = 'black';
-    window.setTimeout(showCamundaPresents, 100);
   }, 100);
 }
 
@@ -129,9 +119,13 @@ function showCamundaPresents() {
   window.setTimeout(() => {
     logo.style.opacity = '0';
     presents.style.opacity = '0';
-
-    window.setTimeout(showNightmodeSplash, 2000);
   }, 4000);
+}
+
+function removeBlackscreen() {
+  const blackScreen = document.getElementById('blackscreen');
+
+  blackScreen.parentNode.removeChild(blackScreen);
 }
 
 function showNightmodeSplash() {
@@ -206,7 +200,19 @@ export default function intro() {
     // step 1
     makeNight();
 
-    document.addEventListener('keydown', sayPowerCritical);
+    const introAnimation = () => {
+      document.removeEventListener('keydown', introAnimation);
+      sayPowerCritical();
+      window.setTimeout(startShaking, 6000);
+      window.setTimeout(sayEnteringEmergency, 8000);
+      window.setTimeout(fadeToBlack, 13000);
+      window.setTimeout(restoreBackground, 14100);
+      window.setTimeout(showCamundaPresents, 14300);
+      window.setTimeout(showNightmodeSplash, 20300);
+      window.setTimeout(resolve, 29300);
+      window.setTimeout(removeBlackscreen, 40000);
+    };
 
+    document.addEventListener('keydown', introAnimation);
   });
 }

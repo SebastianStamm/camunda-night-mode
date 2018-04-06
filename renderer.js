@@ -270,6 +270,17 @@ export default {
     renderer.domElement.style.zIndex = '99999';
     renderer.domElement.style.top = '0';
     renderer.domElement.style.left = '0';
+    renderer.domElement.style.filter = 'blur(200px)';
+    renderer.domElement.style.opacity = '0';
+
+    window.setTimeout(() => {
+      renderer.domElement.style.transition = 'filter 1s, opacity 1s';
+    }, 100);
+
+    window.setTimeout(() => {
+      renderer.domElement.style.filter = '';
+      renderer.domElement.style.opacity = '1';
+    }, 200);
 
     document.body.appendChild(renderer.domElement);
 

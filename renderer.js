@@ -166,6 +166,8 @@ export default {
     function animate() {
       requestAnimationFrame(animate);
 
+      TWEEN.update();
+
       const move = movementVector
         .clone()
         .normalize()

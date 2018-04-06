@@ -13,6 +13,8 @@ export default class Door {
     );
 
     this.open = id === 255;
+    this.currentlyOpen = false;
+    this.tween = null;
 
     this.mesh.position.z = 2;
   }
@@ -25,9 +27,27 @@ export default class Door {
     if (
       dist < 15 && (state.openDoors.includes(this.id) || this.open)
     ) {
-      this.mesh.position.z = 0;
+      if(!this.currentlyOpen) {
+        this.currentlyOpen = true;
+        if(this.tween) {
+          this.tween.stop();
+        }
+        this.tween = new TWEEN.Tween(this.mesh.position)
+          .to({ z: -2 }, 500)
+          .easing(TWEEN.Easing.Bounce.Out)
+          .start();
+      }
     } else {
-      this.mesh.position.z = 2;
+      if(this.currentlyOpen) {
+        this.currentlyOpen = false;
+        if(this.tween) {
+          this.tween.stop();
+        }
+        this.tween = new TWEEN.Tween(this.mesh.position)
+          .to({ z: 2 }, 500)
+          .easing(TWEEN.Easing.Bounce.Out)
+          .start();
+      }
     }
   }
 }

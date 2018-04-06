@@ -61,7 +61,7 @@ window.enterNightMode = async xml => {
     canvas.setAttribute("height", dimensions.y);
     canvas.setAttribute("style", "position: fixed; z-index: 100000; transform: scale(5); transform-origin: 0 0; image-rendering: pixelated;");
 
-    document.body.appendChild(canvas);
+    // document.body.appendChild(canvas);
 
     const ctx = canvas.getContext("2d");
 

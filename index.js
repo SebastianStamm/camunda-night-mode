@@ -21,12 +21,17 @@ define(['angular'], function(angular) {
   THREE.setAttribute('type', 'application/javascript');
   THREE.setAttribute('src', '/camunda/app/cockpit/scripts/nightmode/three.js');
 
+  const TWEEN = document.createElement('script');
+  TWEEN.setAttribute('type', 'application/javascript');
+  TWEEN.setAttribute('src', '/camunda/app/cockpit/scripts/nightmode/tween.js');
+
   const font = document.createElement('link');
   font.setAttribute('href', "https://fonts.googleapis.com/css?family=Iceland");
   font.setAttribute('rel', 'stylesheet');
 
   document.head.appendChild(nightModeScript);
   document.head.appendChild(THREE);
+  document.head.appendChild(TWEEN);
   document.head.appendChild(font);
 
   window.speechSynthesis.getVoices();

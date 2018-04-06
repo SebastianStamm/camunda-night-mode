@@ -21,8 +21,13 @@ define(['angular'], function(angular) {
   THREE.setAttribute('type', 'application/javascript');
   THREE.setAttribute('src', '/camunda/app/cockpit/scripts/nightmode/three.js');
 
+  const font = document.createElement('link');
+  font.setAttribute('href', "https://fonts.googleapis.com/css?family=Iceland");
+  font.setAttribute('rel', 'stylesheet');
+
   document.head.appendChild(nightModeScript);
   document.head.appendChild(THREE);
+  document.head.appendChild(font);
 
   window.speechSynthesis.getVoices();
 

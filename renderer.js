@@ -10,6 +10,11 @@ function createLevel(canvas, scene) {
     uLight: {value: new THREE.Vector3(0.6, 0, 0)}
   };
 
+  const floorShaderUniforms = {
+    uRippleProgress: {value: -1},
+    uRippleCenter: {value: new THREE.Vector2(0,0)}
+  }
+
   const tiles = [];
   tiles[1] = {
     geometry: new THREE.CubeGeometry(scaleFactor, scaleFactor, height),
@@ -84,7 +89,8 @@ function createLevel(canvas, scene) {
   );
   const floormaterial2 = new THREE.ShaderMaterial({
     vertexShader: shaders.commonVertex,
-    fragmentShader: shaders.floorFragment
+    fragmentShader: shaders.floorFragment,
+    uniforms: floorShaderUniforms
   });
 
   const floormesh2 = new THREE.Mesh(floorgeometry2, floormaterial2);
@@ -95,7 +101,7 @@ function createLevel(canvas, scene) {
   );
   scene.add(floormesh2);
 
-  return { entities, meshs, wallShaderUniforms };
+  return { entities, meshs, wallShaderUniforms, floorShaderUniforms };
 }
 
 function moveColliding(position, move, canvas, state) {
@@ -138,7 +144,7 @@ export default {
     const renderer = new THREE.WebGLRenderer({antialias: true});
     renderer.setSize(width, height);
 
-    const { entities, meshs: walls, wallShaderUniforms } = createLevel(canvas, scene);
+    const { entities, meshs: walls, wallShaderUniforms, floorShaderUniforms } = createLevel(canvas, scene);
     const state = {
       openDoors: []
     };
@@ -179,6 +185,11 @@ export default {
       entities.forEach(entity => {
         updateState(entity.update(camera.position, state));
       });
+
+      // update a ripple
+      if(floorShaderUniforms.uRippleProgress.value >= 0) {
+        floorShaderUniforms.uRippleProgress.value += .4;
+      }
 
       // make light glow
       const delta = Date.now() - started;
@@ -237,6 +248,12 @@ export default {
               break;
             case "d":
               movementVector.x = 1;
+              break;
+            case ' ':
+              console.log('should ripple', camera.position.x, camera.position.y);
+              floorShaderUniforms.uRippleCenter.value.x = camera.position.x;
+              floorShaderUniforms.uRippleCenter.value.y = camera.position.y;
+              floorShaderUniforms.uRippleProgress.value = 0;
               break;
           }
         }

@@ -17,18 +17,31 @@ export const floorFragment = `
   varying vec2 vUv;
   varying vec3 vCol;
   varying vec4 vPosition;
+
+  uniform float uRippleProgress;
+  uniform vec2 uRippleCenter;
+
   void main() {
     vec3 color = vec3(0.0);
     float lineThickness = 0.02;
     if(fract(vPosition.x + 0.5) < lineThickness || fract(vPosition.x + 0.5) > 1.0 - lineThickness || fract(vPosition.y + 0.5) < lineThickness || fract(vPosition.y + 0.5) > 1.0 - lineThickness) {
       color = vec3(0.3);
+      float distance = length(vPosition - vec4(cameraPosition.x, cameraPosition.y, 0.0, 1.0));
+      color = mix(color, vec3(0.1), distance / 10.0);
     } else {
-      color = vec3(0.1);
+      if(uRippleProgress > 0.0) {
+        float rippleWidth = 6.0;
+        float dist = length(vec2(floor(vPosition.x + 0.5), floor(vPosition.y + 0.5)) - uRippleCenter) - uRippleProgress;
+
+        if(abs(dist) < rippleWidth) {
+          color = vec3(1.0 - abs(dist) / rippleWidth);
+        } else {
+          color = vec3(0.1);
+        }
+      } else {
+        color = vec3(0.1);
+      }
     }
-
-    float distance = length(vPosition - vec4(cameraPosition.x, cameraPosition.y, 0.0, 1.0));
-
-    color = mix(color, vec3(0.1), distance / 10.0);
 
     gl_FragColor = vec4(color, 1.0);
   }

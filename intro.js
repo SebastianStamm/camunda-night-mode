@@ -9,12 +9,10 @@
 
 // camunda presents fades, Nightmode title screen appears
 
-// font for the logo: https://codepen.io/FelixRilling/pen/qzfoc
 // maybe for the music: https://www.reddit.com/r/gamedev/comments/4afwah/procedural_music_generator_written_in_javascript/
 
-
 function makeNight() {
-  document.body.style.transition = 'filter 4s';
+  document.body.style.transition = 'filter 2s';
   document.body.style.filter="invert(1)";
   document.body.style.background = 'black';
   document.body.style.overflow = 'hidden';
@@ -32,13 +30,11 @@ function sayPowerCritical() {
 
   document.removeEventListener('keydown', sayPowerCritical);
 
-  fadeToBlack();
-
-  // window.setTimeout(() => {
-  //   window.setTimeout(startShaking, 3000);
-  //   window.setTimeout(sayEnteringEmergency, 5000);
-  //   window.setTimeout(fadeToBlack, 10000);
-  // }, 3000);
+  window.setTimeout(() => {
+    window.setTimeout(startShaking, 3000);
+    window.setTimeout(sayEnteringEmergency, 5000);
+    window.setTimeout(fadeToBlack, 10000);
+  }, 3000);
 }
 
 function startShaking() {
@@ -121,22 +117,21 @@ function showCamundaPresents() {
 
   blackScreen.appendChild(content);
 
-  // window.setTimeout(() => {
-  //   logo.style.opacity = '1';
-  // }, 100);
+  window.setTimeout(() => {
+    logo.style.opacity = '1';
+  }, 100);
 
-  // window.setTimeout(() => {
-  //   presents.style.opacity = '1';
-  // }, 2500);
+  window.setTimeout(() => {
+    presents.style.opacity = '1';
+  }, 1500);
 
 
-  // window.setTimeout(() => {
-  //   logo.style.opacity = '0';
-  //   presents.style.opacity = '0';
+  window.setTimeout(() => {
+    logo.style.opacity = '0';
+    presents.style.opacity = '0';
 
-  //   window.setTimeout(showNightmodeSplash, 2000);
-  // }, 5000);
-  showNightmodeSplash();
+    window.setTimeout(showNightmodeSplash, 2000);
+  }, 4000);
 }
 
 function showNightmodeSplash() {
@@ -149,18 +144,30 @@ function showNightmodeSplash() {
   content.style.left = "calc(50% - 714px)";
   content.style.transition = 'filter 3s, opacity 3s';
 
+  // moon
+  const moon = document.createElement('div');
+  moon.innerHTML = '&#x1F319;&#xFE0E;';
+  moon.style.position= 'absolute';
+  moon.style.top= '0';
+  moon.style.left= '1100px';
+  moon.style.transition = 'opacity 3s, color 0.5s';
+  moon.style.opacity = '0';
+  content.appendChild(moon);
+
   const name = document.createElement('div');
   name.innerHTML = '<div>NIGHTMODE</div>';
-  name.style.color = '#228dff';
+  name.style.color = '#134f90';
   name.style.fontFamily = 'Iceland';
-  name.style.transition = 'opacity 1s, color 0.5s';
+  name.style.transition = 'opacity 3s, color 0.5s';
   name.style.opacity = '0';
+  name.style.position = 'absolute';
 
   content.appendChild(name);
   blackScreen.appendChild(content);
 
   window.setTimeout(() => {
     name.style.opacity = '1';
+    moon.style.opacity = '1';
   }, 100);
 
   function makeShadow(intensity) {
@@ -170,18 +177,17 @@ function showNightmodeSplash() {
   window.setTimeout(() => {
     name.style.color = '#fff';
     makeShadow(10);
-  }, 1500);
+  }, 3500);
 
-  window.setTimeout(() => name.style.transition = 'opacity 3s, color 0.5s, text-shadow 1.5s', 1600);
-  window.setTimeout(() => makeShadow(5), 2000);
-  window.setTimeout(() => makeShadow(10), 4500);
-  window.setTimeout(() => makeShadow(5), 6000);
-  window.setTimeout(() => makeShadow(20), 7500);
+  window.setTimeout(() => name.style.transition = 'opacity 3s, color 0.5s, text-shadow 1.5s', 3600);
+  window.setTimeout(() => makeShadow(5), 4000);
+  window.setTimeout(() => makeShadow(10), 6500);
+  window.setTimeout(() => makeShadow(5), 8000);
 
   window.setTimeout(() => {
     content.style.filter = 'blur(200px)';
     content.style.opacity = '0';
-  }, 7500);
+  }, 8000);
 }
 
 function sayEnteringEmergency() {

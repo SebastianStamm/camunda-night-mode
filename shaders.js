@@ -2,12 +2,14 @@ export const commonVertex = `
   varying vec2 vUv;
   varying vec3 vCol;
   varying vec4 vPosition;
+  varying vec4 vRawPosition;
   void main() {
     vUv = uv;
     vCol = vec3(1.0,1.0,1.0);
     vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
     gl_Position = projectionMatrix * mvPosition;
     vPosition = modelMatrix * vec4( position, 1.0 );
+    vRawPosition = vec4(position, 1.0);
   }
 `;
 
@@ -54,6 +56,29 @@ export const wallFragment = `
     }
     if(vPosition.z > 3.9 || vPosition.z < 0.1) {
       color = vec3(0.7);
+    }
+
+    gl_FragColor = vec4(color, 1.0);
+  }
+`;
+
+export const doorFragment = `
+  varying vec2 vUv;
+  varying vec3 vCol;
+  varying vec4 vPosition;
+  varying vec4 vRawPosition;
+
+  void main() {
+    vec3 color = vec3(0.0);
+    float lineThickness = 0.02;
+    if((fract(vRawPosition.x + 0.5) < lineThickness || fract(vRawPosition.x + 0.5) > 1.0 - lineThickness) && (fract(vRawPosition.y + 0.5) < lineThickness || fract(vRawPosition.y + 0.5) > 1.0 - lineThickness)) {
+      color = vec3(0.7, 0.0, 0.0);
+    } else {
+      color = vec3(0.1);
+    }
+
+    if(vRawPosition.z > 1.7 || vRawPosition.z < -1.7) {
+      color = vec3(0.7, 0.0, 0.0);
     }
 
     gl_FragColor = vec4(color, 1.0);

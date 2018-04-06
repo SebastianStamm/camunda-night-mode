@@ -14,7 +14,7 @@ import intro from './intro.js';
 const scaleFactor = 0.2;
 
 window.enterNightMode = async xml => {
-  await intro();
+  // await intro();
   const viewer = new BpmnJS();
   viewer.importXML(xml, () => {
     const { min, max } = (reg => {
@@ -59,7 +59,9 @@ window.enterNightMode = async xml => {
     const canvas = document.createElement("canvas");
     canvas.setAttribute("width", dimensions.x);
     canvas.setAttribute("height", dimensions.y);
-    canvas.setAttribute("style", "position: fixed; z-index: 999; transform: scale(5); transform-origin: 0 0; image-rendering: pixelated;");
+    canvas.setAttribute("style", "position: fixed; z-index: 100000; transform: scale(5); transform-origin: 0 0; image-rendering: pixelated;");
+
+    document.body.appendChild(canvas);
 
     const ctx = canvas.getContext("2d");
 
@@ -160,93 +162,192 @@ window.enterNightMode = async xml => {
     console.log(keyLocations, graph);
 
     // block all entries to nodes with access requirements
-    Object.keys(keyLocations).forEach((node, idx) => {
-      keyLocations[node] = {
-        unlockLocation: keyLocations[node],
-        blockedColor: idx + 1
-      };
+    let blockIdx = 1;
+    viewer.get("elementRegistry").forEach(elem => {
+      if (
+        elem.type !== "label" &&
+        elem.businessObject.$instanceOf("bpmn:FlowNode")
+      ) {
+        const id = elem.id;
+        const closed = keyLocations[id];
+        let openProp = 255;
 
-      const elem = viewer.get("elementRegistry").get(node);
+        if(closed) {
+          openProp = blockIdx++;
+          keyLocations[id] = {
+            unlockLocation: keyLocations[id],
+            blockedColor: openProp
+          }
 
-      elem.incoming.filter(({type}) => type === 'bpmn:SequenceFlow').forEach(elem => {
-        const start = {
-          x:
-            (elem.waypoints[elem.waypoints.length - 1].x + offset.x) *
-            scaleFactor,
-          y:
-            (elem.waypoints[elem.waypoints.length - 1].y + offset.y) *
-            scaleFactor
-        };
-        const vector = new THREE.Vector2(
-          (elem.waypoints[elem.waypoints.length - 2].x + offset.x) *
-            scaleFactor -
-            (elem.waypoints[elem.waypoints.length - 1].x + offset.x) *
+          const unlockElem = viewer
+            .get("elementRegistry")
+            .get(keyLocations[id].unlockLocation);
+
+          const unlocker = ctx.createImageData(1, 1);
+          unlocker.data[0] = 255;
+          unlocker.data[1] = 1;
+          unlocker.data[2] = openProp;
+          unlocker.data[3] = 255;
+
+          ctx.putImageData(
+            unlocker,
+            Math.round(
+              (unlockElem.x + offset.x + unlockElem.width / 2) * scaleFactor
+            ),
+            Math.round(
+              (unlockElem.y + offset.y + unlockElem.height / 2) * scaleFactor
+            )
+          );
+        }
+
+        elem.incoming.filter(({type}) => type === 'bpmn:SequenceFlow').forEach(elem => {
+          const start = {
+            x:
+              (elem.waypoints[elem.waypoints.length - 1].x + offset.x) *
               scaleFactor,
-          (elem.waypoints[elem.waypoints.length - 2].y + offset.y) *
-            scaleFactor -
-            (elem.waypoints[elem.waypoints.length - 1].y + offset.y) *
+            y:
+              (elem.waypoints[elem.waypoints.length - 1].y + offset.y) *
               scaleFactor
-        );
-
-        vector.normalize();
-
-        ctx.beginPath();
-        ctx.moveTo(Math.round(start.x), Math.round(start.y));
-        elem.waypoints.slice(1).forEach(({ x, y }) => {
-          ctx.lineTo(
-            Math.round(start.x + vector.x),
-            Math.round(start.y + vector.y)
+          };
+          const vector = new THREE.Vector2(
+            (elem.waypoints[elem.waypoints.length - 2].x + offset.x) *
+              scaleFactor -
+              (elem.waypoints[elem.waypoints.length - 1].x + offset.x) *
+                scaleFactor,
+            (elem.waypoints[elem.waypoints.length - 2].y + offset.y) *
+              scaleFactor -
+              (elem.waypoints[elem.waypoints.length - 1].y + offset.y) *
+                scaleFactor
           );
+
+          vector.normalize();
+
+          ctx.beginPath();
+          ctx.moveTo(Math.round(start.x), Math.round(start.y));
+          elem.waypoints.slice(1).forEach(({ x, y }) => {
+            ctx.lineTo(
+              Math.round(start.x + vector.x),
+              Math.round(start.y + vector.y)
+            );
+          });
+          ctx.strokeStyle = "rgba(" + (openProp) + ", 2, "+openProp+", 1)";
+          ctx.stroke();
         });
-        ctx.strokeStyle = "rgba(" + (idx + 1) + ", 0, 0, 1)";
-        ctx.stroke();
-      });
-      elem.outgoing.filter(({type}) => type === 'bpmn:SequenceFlow').forEach(elem => {
-        const start = {
-          x: (elem.waypoints[0].x + offset.x) * scaleFactor,
-          y: (elem.waypoints[0].y + offset.y) * scaleFactor
-        };
-        const vector = new THREE.Vector2(
-          (elem.waypoints[1].x + offset.x) * scaleFactor -
-            (elem.waypoints[0].x + offset.x) * scaleFactor,
-          (elem.waypoints[1].y + offset.y) * scaleFactor -
-            (elem.waypoints[0].y + offset.y) * scaleFactor
-        );
-
-        vector.normalize();
-
-        ctx.beginPath();
-        ctx.moveTo(Math.round(start.x), Math.round(start.y));
-        elem.waypoints.slice(1).forEach(({ x, y }) => {
-          ctx.lineTo(
-            Math.round(start.x + vector.x),
-            Math.round(start.y + vector.y)
+        elem.outgoing.filter(({type}) => type === 'bpmn:SequenceFlow').forEach(elem => {
+          const start = {
+            x: (elem.waypoints[0].x + offset.x) * scaleFactor,
+            y: (elem.waypoints[0].y + offset.y) * scaleFactor
+          };
+          const vector = new THREE.Vector2(
+            (elem.waypoints[1].x + offset.x) * scaleFactor -
+              (elem.waypoints[0].x + offset.x) * scaleFactor,
+            (elem.waypoints[1].y + offset.y) * scaleFactor -
+              (elem.waypoints[0].y + offset.y) * scaleFactor
           );
+
+          vector.normalize();
+
+          ctx.beginPath();
+          ctx.moveTo(Math.round(start.x), Math.round(start.y));
+          elem.waypoints.slice(1).forEach(({ x, y }) => {
+            ctx.lineTo(
+              Math.round(start.x + vector.x),
+              Math.round(start.y + vector.y)
+            );
+          });
+          ctx.strokeStyle = "rgba(" + (openProp) + ", 2, "+openProp+", 1)";
+          ctx.stroke();
         });
-        ctx.strokeStyle = "rgba(" + (idx + 1) + ", 0, 0, 1)";
-        ctx.stroke();
-      });
-
-      const unlockElem = viewer
-        .get("elementRegistry")
-        .get(keyLocations[node].unlockLocation);
-
-      const unlocker = ctx.createImageData(1, 1);
-      unlocker.data[0] = 255;
-      unlocker.data[1] = 1;
-      unlocker.data[2] = idx + 1;
-      unlocker.data[3] = 255;
-
-      ctx.putImageData(
-        unlocker,
-        Math.round(
-          (unlockElem.x + offset.x + unlockElem.width / 2) * scaleFactor
-        ),
-        Math.round(
-          (unlockElem.y + offset.y + unlockElem.height / 2) * scaleFactor
-        )
-      );
+      }
     });
+
+    // Object.keys(keyLocations).forEach((node, idx) => {
+    //   keyLocations[node] = {
+    //     unlockLocation: keyLocations[node],
+    //     blockedColor: idx + 1
+    //   };
+
+    //   const elem = viewer.get("elementRegistry").get(node);
+
+    //   elem.incoming.filter(({type}) => type === 'bpmn:SequenceFlow').forEach(elem => {
+    //     const start = {
+    //       x:
+    //         (elem.waypoints[elem.waypoints.length - 1].x + offset.x) *
+    //         scaleFactor,
+    //       y:
+    //         (elem.waypoints[elem.waypoints.length - 1].y + offset.y) *
+    //         scaleFactor
+    //     };
+    //     const vector = new THREE.Vector2(
+    //       (elem.waypoints[elem.waypoints.length - 2].x + offset.x) *
+    //         scaleFactor -
+    //         (elem.waypoints[elem.waypoints.length - 1].x + offset.x) *
+    //           scaleFactor,
+    //       (elem.waypoints[elem.waypoints.length - 2].y + offset.y) *
+    //         scaleFactor -
+    //         (elem.waypoints[elem.waypoints.length - 1].y + offset.y) *
+    //           scaleFactor
+    //     );
+
+    //     vector.normalize();
+
+    //     ctx.beginPath();
+    //     ctx.moveTo(Math.round(start.x), Math.round(start.y));
+    //     elem.waypoints.slice(1).forEach(({ x, y }) => {
+    //       ctx.lineTo(
+    //         Math.round(start.x + vector.x),
+    //         Math.round(start.y + vector.y)
+    //       );
+    //     });
+    //     ctx.strokeStyle = "rgba(" + (idx + 1) + ", 0, 0, 1)";
+    //     ctx.stroke();
+    //   });
+    //   elem.outgoing.filter(({type}) => type === 'bpmn:SequenceFlow').forEach(elem => {
+    //     const start = {
+    //       x: (elem.waypoints[0].x + offset.x) * scaleFactor,
+    //       y: (elem.waypoints[0].y + offset.y) * scaleFactor
+    //     };
+    //     const vector = new THREE.Vector2(
+    //       (elem.waypoints[1].x + offset.x) * scaleFactor -
+    //         (elem.waypoints[0].x + offset.x) * scaleFactor,
+    //       (elem.waypoints[1].y + offset.y) * scaleFactor -
+    //         (elem.waypoints[0].y + offset.y) * scaleFactor
+    //     );
+
+    //     vector.normalize();
+
+    //     ctx.beginPath();
+    //     ctx.moveTo(Math.round(start.x), Math.round(start.y));
+    //     elem.waypoints.slice(1).forEach(({ x, y }) => {
+    //       ctx.lineTo(
+    //         Math.round(start.x + vector.x),
+    //         Math.round(start.y + vector.y)
+    //       );
+    //     });
+    //     ctx.strokeStyle = "rgba(" + (idx + 1) + ", 0, 0, 1)";
+    //     ctx.stroke();
+    //   });
+
+    //   const unlockElem = viewer
+    //     .get("elementRegistry")
+    //     .get(keyLocations[node].unlockLocation);
+
+    //   const unlocker = ctx.createImageData(1, 1);
+    //   unlocker.data[0] = 255;
+    //   unlocker.data[1] = 1;
+    //   unlocker.data[2] = idx + 1;
+    //   unlocker.data[3] = 255;
+
+    //   ctx.putImageData(
+    //     unlocker,
+    //     Math.round(
+    //       (unlockElem.x + offset.x + unlockElem.width / 2) * scaleFactor
+    //     ),
+    //     Math.round(
+    //       (unlockElem.y + offset.y + unlockElem.height / 2) * scaleFactor
+    //     )
+    //   );
+    // });
 
     const startPosition = {
       x: (startNode.x + offset.x + startNode.width / 2) * scaleFactor,

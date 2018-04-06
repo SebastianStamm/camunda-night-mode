@@ -39,7 +39,7 @@ function createLevel(canvas, scene) {
     const x = pxIdx % canvas.width;
     const y = ~~(pxIdx / canvas.width);
 
-    if (red !== 255) {
+    if (red === 0) {
       // should add a wall to this position
 
       var tmesh = new THREE.Mesh(tiles[1].geometry, tiles[1].material);
@@ -133,7 +133,7 @@ export default {
     const height = window.innerHeight;
 
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(45, width / height, 0.01, 100);
+    const camera = new THREE.PerspectiveCamera(45, width / height, 0.001, 100);
 
     const renderer = new THREE.WebGLRenderer({antialias: true});
     renderer.setSize(width, height);
@@ -158,7 +158,6 @@ export default {
         console.log("updating state", change);
         if (change.action === "openDoor") {
           state.openDoors.push(change.id);
-          walls[change.id].parent.remove(walls[change.id]);
         }
       }
     }

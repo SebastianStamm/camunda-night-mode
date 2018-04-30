@@ -61,7 +61,21 @@ function createLevel(canvas, scene) {
     }
 
     if (entityType !== 0 && entityType !== 255) {
-      const entity = new Entity[entityType](entityParam, red);
+      let processedEntityParam = entityParam;
+      if (entityType === 2) {
+        // check which side of the door it is
+        const hasLeft =
+          ctx.getImageData(Math.round(x - 1), Math.round(y), 1, 1).data[1] ===
+          2;
+
+        const hasTop =
+          ctx.getImageData(Math.round(x), Math.round(y - 1), 1, 1).data[1] ===
+          2;
+
+        processedEntityParam += (hasTop || hasLeft) * 4;
+      }
+
+      const entity = new Entity[entityType](processedEntityParam, red);
 
       const container = new THREE.Object3D();
       container.position.x = x * scaleFactor;

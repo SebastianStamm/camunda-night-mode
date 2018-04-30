@@ -19,7 +19,7 @@ export default class Door {
     );
     this.innerMesh.rotation.order = "ZXY";
     this.innerMesh.rotation.y = Math.PI / 2;
-    switch (orientation) {
+    switch (this.orientation) {
       case 1:
         this.mesh.position.y = -0.5;
         if (this.side) {
@@ -50,7 +50,7 @@ export default class Door {
           this.mesh.position.x = 0.5;
         }
         break;
-      case 4:
+      case 0:
         this.mesh.position.x = 0.5;
         if (this.side) {
           this.innerMesh.position.y = -0.5;
@@ -62,7 +62,7 @@ export default class Door {
         break;
     }
 
-    if (orientation === 1 || orientation === 3) {
+    if (this.orientation === 1 || this.orientation === 3) {
       this.innerMesh.rotation.z = Math.PI / 2;
     }
 
@@ -94,10 +94,13 @@ export default class Door {
         if (this.orientation === 3 || this.orientation === 0) {
           target *= -1;
         }
+        if (!this.side) {
+          target *= -1;
+        }
 
         this.tween = new TWEEN.Tween(this.mesh.rotation)
           .to({ z: target }, 500)
-          .easing(TWEEN.Easing.Bounce.Out)
+          .easing(TWEEN.Easing.Quadratic.Out)
           .start();
       }
     } else {
@@ -108,7 +111,7 @@ export default class Door {
         }
         this.tween = new TWEEN.Tween(this.mesh.rotation)
           .to({ z: 0 }, 500)
-          .easing(TWEEN.Easing.Bounce.Out)
+          .easing(TWEEN.Easing.Quadratic.Out)
           .start();
       }
     }

@@ -10,9 +10,23 @@ function createLevel(canvas, scene) {
     uLight: { value: new THREE.Vector3(0.6, 0, 0) }
   };
 
+  const canvasSize =
+    2 ** Math.ceil(Math.log2(Math.max(canvas.width, canvas.height)));
+
+  const floorCanvas = document.createElement("canvas");
+  floorCanvas.setAttribute("width", canvasSize);
+  floorCanvas.setAttribute("height", canvasSize);
+
+  const floorCtx = floorCanvas.getContext("2d");
+  floorCtx.fillStyle = "rgba(20, 20, 20, 1)";
+  floorCtx.fillRect(0, 0, canvasSize - 1, canvasSize - 1);
+
+  document.body.appendChild(floorCanvas);
+
   const floorShaderUniforms = {
     uRippleProgress: { value: -1 },
-    uRippleCenter: { value: new THREE.Vector2(0, 0) }
+    uRippleCenter: { value: new THREE.Vector2(0, 0) },
+    uColors: { type: "t", value: new THREE.Texture(floorCanvas) }
   };
 
   const tiles = [];
@@ -43,6 +57,11 @@ function createLevel(canvas, scene) {
     const pxIdx = i / 4;
     const x = pxIdx % canvas.width;
     const y = ~~(pxIdx / canvas.width);
+
+    floorCtx.fillStyle = `rgba(${~~(Math.random() * 255)},${~~(
+      Math.random() * 255
+    )},${~~(Math.random() * 255)},1)`;
+    floorCtx.fillRect(x, y, 1, 1);
 
     if (red === 0) {
       // should add a wall to this position
@@ -103,7 +122,10 @@ function createLevel(canvas, scene) {
   );
   const floormaterial2 = new THREE.ShaderMaterial({
     vertexShader: shaders.commonVertex,
-    fragmentShader: shaders.floorFragment,
+    fragmentShader: shaders.floorFragment.replace(
+      /%CANVAS_SIZE%/g,
+      canvasSize + ".0"
+    ),
     uniforms: floorShaderUniforms
   });
 
@@ -115,7 +137,12 @@ function createLevel(canvas, scene) {
   );
   scene.add(floormesh2);
 
-  return { entities, meshs, wallShaderUniforms, floorShaderUniforms };
+  return {
+    entities,
+    meshs,
+    wallShaderUniforms,
+    floorShaderUniforms
+  };
 }
 
 function moveColliding(position, move, canvas, state) {
@@ -212,6 +239,9 @@ export default {
       if (floorShaderUniforms.uRippleProgress.value >= 0) {
         floorShaderUniforms.uRippleProgress.value += 0.4;
       }
+
+      // debugger;
+      floorShaderUniforms.uColors.value.needsUpdate = true;
 
       // make light glow
       const delta = Date.now() - started;

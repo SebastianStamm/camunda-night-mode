@@ -20,30 +20,29 @@ export const floorFragment = `
 
   uniform float uRippleProgress;
   uniform vec2 uRippleCenter;
+  uniform sampler2D uColors;
 
   void main() {
-    vec3 color = vec3(0.0);
+    vec4 color = texture2D(uColors, vec2(floor(vPosition.x + 0.5) / %CANVAS_SIZE%, floor(-vPosition.y + 0.5) / %CANVAS_SIZE%));
+    // vec4 color = texture2D(uColors, vec2(fract(vPosition.x + 0.5), fract(vPosition.y + 0.5)));
+    // vec4 color = vec4(vPosition.x / %CANVAS_SIZE%, -vPosition.y / %CANVAS_SIZE%, 0.0, 1.0);
     float lineThickness = 0.02;
     if(fract(vPosition.x + 0.5) < lineThickness || fract(vPosition.x + 0.5) > 1.0 - lineThickness || fract(vPosition.y + 0.5) < lineThickness || fract(vPosition.y + 0.5) > 1.0 - lineThickness) {
-      color = vec3(0.3);
       float distance = length(vPosition - vec4(cameraPosition.x, cameraPosition.y, 0.0, 1.0));
-      color = mix(color, vec3(0.1), distance / 10.0);
+      color = mix(vec4(0.3, 0.3, 0.3, 1.0), color, distance / 10.0);
     } else {
       if(uRippleProgress > 0.0) {
         float rippleWidth = 6.0;
         float dist = length(vec2(floor(vPosition.x + 0.5), floor(vPosition.y + 0.5)) - uRippleCenter) - uRippleProgress;
 
         if(abs(dist) < rippleWidth) {
-          color = vec3(1.0 - abs(dist) / rippleWidth);
-        } else {
-          color = vec3(0.1);
+          // color = vec4(vec3(1.0 - abs(dist) / rippleWidth), 1.0);
+          color = mix(color, vec4(vec3(1.0 - abs(dist) / rippleWidth), 1.0), 1.0 - abs(dist) / rippleWidth);
         }
-      } else {
-        color = vec3(0.1);
       }
     }
 
-    gl_FragColor = vec4(color, 1.0);
+    gl_FragColor = color;
   }
 `;
 

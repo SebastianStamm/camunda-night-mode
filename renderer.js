@@ -1,19 +1,19 @@
 import Entity from "./entities/index.js";
 
-import * as shaders from './shaders.js';
+import * as shaders from "./shaders.js";
 
 const scaleFactor = 1;
 const height = 4;
 
 function createLevel(canvas, scene) {
   const wallShaderUniforms = {
-    uLight: {value: new THREE.Vector3(0.6, 0, 0)}
+    uLight: { value: new THREE.Vector3(0.6, 0, 0) }
   };
 
   const floorShaderUniforms = {
-    uRippleProgress: {value: -1},
-    uRippleCenter: {value: new THREE.Vector2(0,0)}
-  }
+    uRippleProgress: { value: -1 },
+    uRippleCenter: { value: new THREE.Vector2(0, 0) }
+  };
 
   const tiles = [];
   tiles[1] = {
@@ -22,7 +22,7 @@ function createLevel(canvas, scene) {
       uniforms: wallShaderUniforms,
       vertexShader: shaders.commonVertex,
       fragmentShader: shaders.wallFragment
-     })
+    })
   };
 
   let meshs = [];
@@ -61,7 +61,7 @@ function createLevel(canvas, scene) {
     }
 
     if (entityType !== 0 && entityType !== 255) {
-      const entity = new Entity[entityType](entityParam);
+      const entity = new Entity[entityType](entityParam, red);
 
       const container = new THREE.Object3D();
       container.position.x = x * scaleFactor;
@@ -141,10 +141,15 @@ export default {
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.001, 100);
 
-    const renderer = new THREE.WebGLRenderer({antialias: true});
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(width, height);
 
-    const { entities, meshs: walls, wallShaderUniforms, floorShaderUniforms } = createLevel(canvas, scene);
+    const {
+      entities,
+      meshs: walls,
+      wallShaderUniforms,
+      floorShaderUniforms
+    } = createLevel(canvas, scene);
     const state = {
       openDoors: []
     };
@@ -190,13 +195,14 @@ export default {
       });
 
       // update a ripple
-      if(floorShaderUniforms.uRippleProgress.value >= 0) {
-        floorShaderUniforms.uRippleProgress.value += .4;
+      if (floorShaderUniforms.uRippleProgress.value >= 0) {
+        floorShaderUniforms.uRippleProgress.value += 0.4;
       }
 
       // make light glow
       const delta = Date.now() - started;
-      wallShaderUniforms.uLight.value.x = (Math.sin(delta / 3000 * 2 * Math.PI) + 1) / 2;
+      wallShaderUniforms.uLight.value.x =
+        (Math.sin(delta / 3000 * 2 * Math.PI) + 1) / 2;
       renderer.render(scene, camera);
     }
     animate();
@@ -274,27 +280,26 @@ export default {
       false
     );
 
-    window.addEventListener('resize', () => {
-      console.log('changing size');
+    window.addEventListener("resize", () => {
       renderer.setSize(window.innerWidth, window.innerHeight);
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
     });
 
-    renderer.domElement.style.position = 'fixed';
-    renderer.domElement.style.zIndex = '99999';
-    renderer.domElement.style.top = '0';
-    renderer.domElement.style.left = '0';
-    renderer.domElement.style.filter = 'blur(200px)';
-    renderer.domElement.style.opacity = '0';
+    renderer.domElement.style.position = "fixed";
+    renderer.domElement.style.zIndex = "99999";
+    renderer.domElement.style.top = "0";
+    renderer.domElement.style.left = "0";
+    renderer.domElement.style.filter = "blur(200px)";
+    renderer.domElement.style.opacity = "0";
 
     window.setTimeout(() => {
-      renderer.domElement.style.transition = 'filter 1s, opacity 1s';
+      renderer.domElement.style.transition = "filter 1s, opacity 1s";
     }, 100);
 
     window.setTimeout(() => {
-      renderer.domElement.style.filter = '';
-      renderer.domElement.style.opacity = '1';
+      renderer.domElement.style.filter = "";
+      renderer.domElement.style.opacity = "1";
     }, 200);
 
     document.body.appendChild(renderer.domElement);

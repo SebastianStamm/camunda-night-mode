@@ -9,7 +9,7 @@ import {
 import renderer from "./renderer.js";
 
 import * as canvasProcessing from "./canvasProcessing.js";
-import intro from './intro.js';
+import intro from "./intro.js";
 
 const scaleFactor = 0.2;
 
@@ -31,11 +31,11 @@ window.enterNightMode = async xml => {
           max.y = Math.max(max.y, elem.y + elem.height);
         }
 
-        if(elem.type === 'bpmn:SequenceFlow') {
-          const minX = Math.min(...elem.waypoints.map(({x}) => x));
-          const maxX = Math.max(...elem.waypoints.map(({x}) => x));
-          const minY = Math.min(...elem.waypoints.map(({y}) => y));
-          const maxY = Math.max(...elem.waypoints.map(({y}) => y));
+        if (elem.type === "bpmn:SequenceFlow") {
+          const minX = Math.min(...elem.waypoints.map(({ x }) => x));
+          const maxX = Math.max(...elem.waypoints.map(({ x }) => x));
+          const minY = Math.min(...elem.waypoints.map(({ y }) => y));
+          const maxY = Math.max(...elem.waypoints.map(({ y }) => y));
 
           min.x = Math.min(min.x, minX - 8);
           min.y = Math.min(min.y, minY - 8);
@@ -59,7 +59,10 @@ window.enterNightMode = async xml => {
     const canvas = document.createElement("canvas");
     canvas.setAttribute("width", dimensions.x);
     canvas.setAttribute("height", dimensions.y);
-    canvas.setAttribute("style", "position: fixed; z-index: 100000; transform: scale(5); transform-origin: 0 0; image-rendering: pixelated;");
+    canvas.setAttribute(
+      "style",
+      "position: fixed; z-index: 100000; transform: scale(5); transform-origin: 0 0; image-rendering: pixelated;"
+    );
 
     // document.body.appendChild(canvas);
 
@@ -149,7 +152,7 @@ window.enterNightMode = async xml => {
       const keyRoom = getNodeFurthestAwayFrom(subGraph, start, subGoal);
       subGraph = removeNodeFromGraph(subGraph, subGoal);
 
-      if(isNodeReachable(subGraph, start, keyRoom)) {
+      if (isNodeReachable(subGraph, start, keyRoom)) {
         keyLocations[subGoal] = keyRoom;
 
         subGoal = keyRoom;
@@ -172,12 +175,12 @@ window.enterNightMode = async xml => {
         const closed = keyLocations[id];
         let openProp = 255;
 
-        if(closed) {
+        if (closed) {
           openProp = blockIdx++;
           keyLocations[id] = {
             unlockLocation: keyLocations[id],
             blockedColor: openProp
-          }
+          };
 
           const unlockElem = viewer
             .get("elementRegistry")
@@ -200,154 +203,78 @@ window.enterNightMode = async xml => {
           );
         }
 
-        elem.incoming.filter(({type}) => type === 'bpmn:SequenceFlow').forEach(elem => {
-          const start = {
-            x:
-              (elem.waypoints[elem.waypoints.length - 1].x + offset.x) *
-              scaleFactor,
-            y:
-              (elem.waypoints[elem.waypoints.length - 1].y + offset.y) *
-              scaleFactor
-          };
-          const vector = new THREE.Vector2(
-            (elem.waypoints[elem.waypoints.length - 2].x + offset.x) *
-              scaleFactor -
-              (elem.waypoints[elem.waypoints.length - 1].x + offset.x) *
+        elem.incoming
+          .filter(({ type }) => type === "bpmn:SequenceFlow")
+          .forEach(elem => {
+            const start = {
+              x:
+                (elem.waypoints[elem.waypoints.length - 1].x + offset.x) *
                 scaleFactor,
-            (elem.waypoints[elem.waypoints.length - 2].y + offset.y) *
-              scaleFactor -
-              (elem.waypoints[elem.waypoints.length - 1].y + offset.y) *
+              y:
+                (elem.waypoints[elem.waypoints.length - 1].y + offset.y) *
                 scaleFactor
-          );
-
-          vector.normalize();
-
-          ctx.beginPath();
-          ctx.moveTo(Math.round(start.x), Math.round(start.y));
-          elem.waypoints.slice(1).forEach(({ x, y }) => {
-            ctx.lineTo(
-              Math.round(start.x + vector.x),
-              Math.round(start.y + vector.y)
+            };
+            const vector = new THREE.Vector2(
+              (elem.waypoints[elem.waypoints.length - 2].x + offset.x) *
+                scaleFactor -
+                (elem.waypoints[elem.waypoints.length - 1].x + offset.x) *
+                  scaleFactor,
+              (elem.waypoints[elem.waypoints.length - 2].y + offset.y) *
+                scaleFactor -
+                (elem.waypoints[elem.waypoints.length - 1].y + offset.y) *
+                  scaleFactor
             );
+
+            vector.normalize();
+
+            ctx.beginPath();
+            ctx.moveTo(Math.round(start.x), Math.round(start.y));
+            elem.waypoints.slice(1).forEach(({ x, y }) => {
+              ctx.lineTo(
+                Math.round(start.x + vector.x),
+                Math.round(start.y + vector.y)
+              );
+            });
+
+            const orientation = getOrientationFromVector(vector);
+
+            ctx.strokeStyle =
+              "rgba(" + openProp + ", 2, " + orientation + ", 1)";
+            ctx.stroke();
           });
-          ctx.strokeStyle = "rgba(" + (openProp) + ", 2, "+openProp+", 1)";
-          ctx.stroke();
-        });
-        elem.outgoing.filter(({type}) => type === 'bpmn:SequenceFlow').forEach(elem => {
-          const start = {
-            x: (elem.waypoints[0].x + offset.x) * scaleFactor,
-            y: (elem.waypoints[0].y + offset.y) * scaleFactor
-          };
-          const vector = new THREE.Vector2(
-            (elem.waypoints[1].x + offset.x) * scaleFactor -
-              (elem.waypoints[0].x + offset.x) * scaleFactor,
-            (elem.waypoints[1].y + offset.y) * scaleFactor -
-              (elem.waypoints[0].y + offset.y) * scaleFactor
-          );
-
-          vector.normalize();
-
-          ctx.beginPath();
-          ctx.moveTo(Math.round(start.x), Math.round(start.y));
-          elem.waypoints.slice(1).forEach(({ x, y }) => {
-            ctx.lineTo(
-              Math.round(start.x + vector.x),
-              Math.round(start.y + vector.y)
+        elem.outgoing
+          .filter(({ type }) => type === "bpmn:SequenceFlow")
+          .forEach(elem => {
+            const start = {
+              x: (elem.waypoints[0].x + offset.x) * scaleFactor,
+              y: (elem.waypoints[0].y + offset.y) * scaleFactor
+            };
+            const vector = new THREE.Vector2(
+              (elem.waypoints[1].x + offset.x) * scaleFactor -
+                (elem.waypoints[0].x + offset.x) * scaleFactor,
+              (elem.waypoints[1].y + offset.y) * scaleFactor -
+                (elem.waypoints[0].y + offset.y) * scaleFactor
             );
+
+            vector.normalize();
+
+            ctx.beginPath();
+            ctx.moveTo(Math.round(start.x), Math.round(start.y));
+            elem.waypoints.slice(1).forEach(({ x, y }) => {
+              ctx.lineTo(
+                Math.round(start.x + vector.x),
+                Math.round(start.y + vector.y)
+              );
+            });
+
+            const orientation = getOrientationFromVector(vector);
+
+            ctx.strokeStyle =
+              "rgba(" + openProp + ", 2, " + orientation + ", 1)";
+            ctx.stroke();
           });
-          ctx.strokeStyle = "rgba(" + (openProp) + ", 2, "+openProp+", 1)";
-          ctx.stroke();
-        });
       }
     });
-
-    // Object.keys(keyLocations).forEach((node, idx) => {
-    //   keyLocations[node] = {
-    //     unlockLocation: keyLocations[node],
-    //     blockedColor: idx + 1
-    //   };
-
-    //   const elem = viewer.get("elementRegistry").get(node);
-
-    //   elem.incoming.filter(({type}) => type === 'bpmn:SequenceFlow').forEach(elem => {
-    //     const start = {
-    //       x:
-    //         (elem.waypoints[elem.waypoints.length - 1].x + offset.x) *
-    //         scaleFactor,
-    //       y:
-    //         (elem.waypoints[elem.waypoints.length - 1].y + offset.y) *
-    //         scaleFactor
-    //     };
-    //     const vector = new THREE.Vector2(
-    //       (elem.waypoints[elem.waypoints.length - 2].x + offset.x) *
-    //         scaleFactor -
-    //         (elem.waypoints[elem.waypoints.length - 1].x + offset.x) *
-    //           scaleFactor,
-    //       (elem.waypoints[elem.waypoints.length - 2].y + offset.y) *
-    //         scaleFactor -
-    //         (elem.waypoints[elem.waypoints.length - 1].y + offset.y) *
-    //           scaleFactor
-    //     );
-
-    //     vector.normalize();
-
-    //     ctx.beginPath();
-    //     ctx.moveTo(Math.round(start.x), Math.round(start.y));
-    //     elem.waypoints.slice(1).forEach(({ x, y }) => {
-    //       ctx.lineTo(
-    //         Math.round(start.x + vector.x),
-    //         Math.round(start.y + vector.y)
-    //       );
-    //     });
-    //     ctx.strokeStyle = "rgba(" + (idx + 1) + ", 0, 0, 1)";
-    //     ctx.stroke();
-    //   });
-    //   elem.outgoing.filter(({type}) => type === 'bpmn:SequenceFlow').forEach(elem => {
-    //     const start = {
-    //       x: (elem.waypoints[0].x + offset.x) * scaleFactor,
-    //       y: (elem.waypoints[0].y + offset.y) * scaleFactor
-    //     };
-    //     const vector = new THREE.Vector2(
-    //       (elem.waypoints[1].x + offset.x) * scaleFactor -
-    //         (elem.waypoints[0].x + offset.x) * scaleFactor,
-    //       (elem.waypoints[1].y + offset.y) * scaleFactor -
-    //         (elem.waypoints[0].y + offset.y) * scaleFactor
-    //     );
-
-    //     vector.normalize();
-
-    //     ctx.beginPath();
-    //     ctx.moveTo(Math.round(start.x), Math.round(start.y));
-    //     elem.waypoints.slice(1).forEach(({ x, y }) => {
-    //       ctx.lineTo(
-    //         Math.round(start.x + vector.x),
-    //         Math.round(start.y + vector.y)
-    //       );
-    //     });
-    //     ctx.strokeStyle = "rgba(" + (idx + 1) + ", 0, 0, 1)";
-    //     ctx.stroke();
-    //   });
-
-    //   const unlockElem = viewer
-    //     .get("elementRegistry")
-    //     .get(keyLocations[node].unlockLocation);
-
-    //   const unlocker = ctx.createImageData(1, 1);
-    //   unlocker.data[0] = 255;
-    //   unlocker.data[1] = 1;
-    //   unlocker.data[2] = idx + 1;
-    //   unlocker.data[3] = 255;
-
-    //   ctx.putImageData(
-    //     unlocker,
-    //     Math.round(
-    //       (unlockElem.x + offset.x + unlockElem.width / 2) * scaleFactor
-    //     ),
-    //     Math.round(
-    //       (unlockElem.y + offset.y + unlockElem.height / 2) * scaleFactor
-    //     )
-    //   );
-    // });
 
     const startPosition = {
       x: (startNode.x + offset.x + startNode.width / 2) * scaleFactor,
@@ -359,3 +286,15 @@ window.enterNightMode = async xml => {
     renderer.init(canvas, startPosition);
   });
 };
+
+function getOrientationFromVector(vector) {
+  if (Math.round(vector.x) === -1) {
+    return 4;
+  } else if (Math.round(vector.x) === 1) {
+    return 2;
+  } else if (Math.round(vector.y) === -1) {
+    return 1;
+  } else if (Math.round(vector.y) === 1) {
+    return 3;
+  }
+}

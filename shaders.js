@@ -23,9 +23,7 @@ export const floorFragment = `
   uniform sampler2D uColors;
 
   void main() {
-    vec4 color = texture2D(uColors, vec2(floor(vPosition.x + 0.5) / %CANVAS_SIZE%, floor(-vPosition.y + 0.5) / %CANVAS_SIZE%));
-    // vec4 color = texture2D(uColors, vec2(fract(vPosition.x + 0.5), fract(vPosition.y + 0.5)));
-    // vec4 color = vec4(vPosition.x / %CANVAS_SIZE%, -vPosition.y / %CANVAS_SIZE%, 0.0, 1.0);
+    vec4 color = texture2D(uColors, vec2(floor(vPosition.x + 0.5) / %CANVAS_SIZE%, 1.0 - floor(-vPosition.y + 0.5) / %CANVAS_SIZE%));
     float lineThickness = 0.02;
     if(fract(vPosition.x + 0.5) < lineThickness || fract(vPosition.x + 0.5) > 1.0 - lineThickness || fract(vPosition.y + 0.5) < lineThickness || fract(vPosition.y + 0.5) > 1.0 - lineThickness) {
       float distance = length(vPosition - vec4(cameraPosition.x, cameraPosition.y, 0.0, 1.0));

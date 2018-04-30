@@ -29,6 +29,10 @@ function createLevel(canvas, scene) {
     uColors: { type: "t", value: new THREE.Texture(floorCanvas) }
   };
 
+  floorShaderUniforms.uColors.value.generateMipmaps = false;
+  floorShaderUniforms.uColors.value.minFilter = THREE.NearestFilter;
+  floorShaderUniforms.uColors.value.magFilter = THREE.NearestFilter;
+
   const tiles = [];
   tiles[1] = {
     geometry: new THREE.CubeGeometry(scaleFactor, scaleFactor, height),
@@ -57,11 +61,6 @@ function createLevel(canvas, scene) {
     const pxIdx = i / 4;
     const x = pxIdx % canvas.width;
     const y = ~~(pxIdx / canvas.width);
-
-    floorCtx.fillStyle = `rgba(${~~(Math.random() * 255)},${~~(
-      Math.random() * 255
-    )},${~~(Math.random() * 255)},1)`;
-    floorCtx.fillRect(x, y, 1, 1);
 
     if (red === 0) {
       // should add a wall to this position
@@ -92,6 +91,9 @@ function createLevel(canvas, scene) {
           2;
 
         processedEntityParam += (hasTop || hasLeft) * 4;
+
+        floorCtx.fillStyle = `rgba(117, 111, 3,1)`;
+        floorCtx.fillRect(x, y - 1, 1, 1);
       }
 
       const entity = new Entity[entityType](processedEntityParam, red);

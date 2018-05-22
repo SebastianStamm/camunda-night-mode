@@ -360,6 +360,8 @@ export default {
     document.body.webkitRequestFullscreen();
 
     updateGameProgression(window.locationsToUnlock);
+
+    addCrosshair();
   }
 };
 
@@ -394,4 +396,24 @@ function updateGameProgression(state) {
     // window.wallShaderUniforms.uLight.value.x =
     // (Math.sin(delta / 3000 * 2 * Math.PI) + 1) / 2;
   }
+}
+
+function addCrosshair() {
+  const cross = document.createElement("img");
+  cross.setAttribute(
+    "src",
+    "/camunda/app/cockpit/scripts/nightmode/crosshair.png"
+  );
+  cross.style.position = "absolute";
+  cross.style.top = "50%";
+  cross.style.left = "50%";
+  cross.style.marginLeft = "-4px";
+  cross.style.marginTop = "-4px";
+  cross.style.zIndex = "100000";
+  cross.style.filter = "invert(1)";
+  cross.style.transform = "scale(1.5)";
+
+  window.crossHair = cross;
+
+  document.body.appendChild(cross);
 }

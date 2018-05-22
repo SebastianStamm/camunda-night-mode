@@ -189,7 +189,7 @@ window.enterNightMode = async xml => {
             .get(keyLocations[id].unlockLocation);
 
           const unlocker = ctx.createImageData(1, 1);
-          unlocker.data[0] = 255;
+          unlocker.data[0] = 254;
           unlocker.data[1] = 1;
           unlocker.data[2] = openProp;
           unlocker.data[3] = 255;
@@ -199,9 +199,7 @@ window.enterNightMode = async xml => {
             Math.round(
               (unlockElem.x + offset.x + unlockElem.width / 2) * scaleFactor
             ),
-            Math.round(
-              (unlockElem.y + offset.y + unlockElem.height / 2) * scaleFactor
-            )
+            Math.round((unlockElem.y + offset.y) * scaleFactor) + 2
           );
         }
 

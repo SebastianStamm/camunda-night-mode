@@ -120,3 +120,22 @@ export const doorFragment = `
     gl_FragColor = vec4(color, 1.0);
   }
 `;
+
+export const buttonStandFragment = `
+  varying vec4 vPosition;
+
+  uniform float uActive;
+
+  void main() {
+    vec3 color = vec3(0.3);
+
+    if(vPosition.z > 1.2) {
+      if(uActive > 0.0) {
+        color = vec3(0.0,0.7, 0.0);
+      } else {
+        color = vec3(0.7,0.0, 0.0);
+      }
+    }
+    gl_FragColor = vec4(color, 1.0);
+  }
+`;

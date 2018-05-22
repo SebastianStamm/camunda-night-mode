@@ -164,6 +164,8 @@ window.enterNightMode = async xml => {
     console.log("player should go from", start, "to", goal);
     console.log(keyLocations, graph);
 
+    window.locationsToUnlock = Object.keys(keyLocations).length;
+
     // block all entries to nodes with access requirements
     let blockIdx = 1;
     viewer.get("elementRegistry").forEach(elem => {

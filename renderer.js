@@ -7,8 +7,11 @@ const height = 4;
 
 function createLevel(canvas, scene) {
   const wallShaderUniforms = {
-    uLight: { value: new THREE.Vector3(0.6, 0, 0) }
+    uLight: { value: new THREE.Vector3(0.0, 0, 0) },
+    uState: { value: window.locationsToUnlock }
   };
+
+  window.wallShaderUniforms = wallShaderUniforms;
 
   const canvasSize =
     2 ** Math.ceil(Math.log2(Math.max(canvas.width, canvas.height)));
@@ -26,7 +29,8 @@ function createLevel(canvas, scene) {
   const floorShaderUniforms = {
     uRippleProgress: { value: -1 },
     uRippleCenter: { value: new THREE.Vector2(0, 0) },
-    uColors: { type: "t", value: new THREE.Texture(floorCanvas) }
+    uColors: { type: "t", value: new THREE.Texture(floorCanvas) },
+    uState: { value: window.locationsToUnlock }
   };
 
   floorShaderUniforms.uColors.value.generateMipmaps = false;
@@ -93,7 +97,7 @@ function createLevel(canvas, scene) {
         processedEntityParam += (hasTop || hasLeft) * 4;
 
         floorCtx.fillStyle = `rgba(117, 111, 3,1)`;
-        floorCtx.fillRect(x, y - 1, 1, 1);
+        // floorCtx.fillRect(x, y - 1, 1, 1);
       }
 
       const entity = new Entity[entityType](processedEntityParam, red);
@@ -215,11 +219,13 @@ export default {
           floorShaderUniforms.uRippleCenter.value.x = camera.position.x;
           floorShaderUniforms.uRippleCenter.value.y = camera.position.y;
           floorShaderUniforms.uRippleProgress.value = 0;
+
+          updateGameProgression(--window.locationsToUnlock);
         }
       }
     }
 
-    const started = Date.now();
+    // window.pulsatingRedStarted = 0;
     function animate() {
       requestAnimationFrame(animate);
 
@@ -246,9 +252,9 @@ export default {
       floorShaderUniforms.uColors.value.needsUpdate = true;
 
       // make light glow
-      const delta = Date.now() - started;
-      wallShaderUniforms.uLight.value.x =
-        (Math.sin(delta / 3000 * 2 * Math.PI) + 1) / 2;
+      // const delta = Date.now() - window.pulsatingRedStarted;
+      // wallShaderUniforms.uLight.value.x =
+      //   (Math.sin(delta / 3000 * 2 * Math.PI) + 1) / 2;
       renderer.render(scene, camera);
     }
     animate();
@@ -351,6 +357,41 @@ export default {
     document.body.appendChild(renderer.domElement);
 
     renderer.domElement.requestPointerLock();
-    renderer.domElement.webkitRequestFullscreen();
+    document.body.webkitRequestFullscreen();
+
+    updateGameProgression(window.locationsToUnlock);
   }
 };
+
+function updateGameProgression(state) {
+  if (state === 7) {
+    // initial state, ensure dark and flashlight
+    const flashlight = document.createElement("div");
+    flashlight.style.position = "fixed";
+    flashlight.style.top = "0px";
+    flashlight.style.left = "0px";
+    flashlight.style.width = "100vw";
+    flashlight.style.height = "100vh";
+    flashlight.style.background = "radial-gradient(rgba(0,0,0,0.3), #000)";
+    flashlight.style.pointerEvents = "none";
+    flashlight.style.zIndex = "1000000";
+    flashlight.style.opacity = "1";
+    flashlight.style.transition = "opacity 1s";
+
+    window.flashlight = flashlight;
+
+    document.body.appendChild(flashlight);
+  } else if (state === 6) {
+    // emergency lighting is restored
+    window.wallShaderUniforms.uState.value = state;
+    window.flashlight.style.opacity = "0";
+
+    // window.pulsatingRedStarted = Date.now();
+    new TWEEN.Tween(window.wallShaderUniforms.uLight.value)
+      .to({ x: 1 }, 5000)
+      .easing(TWEEN.Easing.Quadratic.Out)
+      .start();
+    // window.wallShaderUniforms.uLight.value.x =
+    // (Math.sin(delta / 3000 * 2 * Math.PI) + 1) / 2;
+  }
+}

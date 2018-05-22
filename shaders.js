@@ -50,25 +50,51 @@ export const wallFragment = `
   varying vec4 vPosition;
 
   uniform vec3 uLight;
+  uniform float uState;
 
   void main() {
-    vec3 baseColor = vec3(0.1);
-    vec3 highlightColor = uLight;
-    vec3 color = baseColor;
+    if(uState == 7.0) {
+      if(vPosition.z < 0.1) {
+        gl_FragColor = vec4(0.4, 0.4, 0.4, 1.0);
+      } else {
+        gl_FragColor = vec4(0.1,0.1,0.1,1.0);
+      }
+    } else if(uState == 6.0) {
+      vec3 baseColor = vec3(0.1);
+      vec3 highlightColor = uLight;
+      vec3 color = baseColor;
 
-    float stripeWidth = 1.3;
+      float stripeWidth = 3.0;
 
-    if(vPosition.z < stripeWidth) {
-      color = mix(highlightColor, baseColor, smoothstep(0.0, stripeWidth, vPosition.z));
-    }
-    if(4.0 - vPosition.z < stripeWidth) {
-      color = mix(highlightColor, baseColor, smoothstep(4.0, 4.0 - stripeWidth, vPosition.z));
-    }
-    if(vPosition.z > 3.9 || vPosition.z < 0.1) {
-      color = vec3(0.7);
+      if(4.0 - vPosition.z < stripeWidth) {
+        color = mix(highlightColor, baseColor, smoothstep(4.0, 4.0 - stripeWidth, vPosition.z));
+      }
+      if(vPosition.z > 3.9 || vPosition.z < 0.1) {
+        color = vec3(0.7);
+      }
+
+      gl_FragColor = vec4(color, 1.0);
     }
 
-    gl_FragColor = vec4(color, 1.0);
+    else {
+      vec3 baseColor = vec3(0.1);
+      vec3 highlightColor = uLight;
+      vec3 color = baseColor;
+
+      float stripeWidth = 1.3;
+
+      if(vPosition.z < stripeWidth) {
+        color = mix(highlightColor, baseColor, smoothstep(0.0, stripeWidth, vPosition.z));
+      }
+      if(4.0 - vPosition.z < stripeWidth) {
+        color = mix(highlightColor, baseColor, smoothstep(4.0, 4.0 - stripeWidth, vPosition.z));
+      }
+      if(vPosition.z > 3.9 || vPosition.z < 0.1) {
+        color = vec3(0.7);
+      }
+
+      gl_FragColor = vec4(color, 1.0);
+    }
   }
 `;
 

@@ -1,5 +1,5 @@
 export function dijkstra(graph, start) {
-  const unvisited = new Set;
+  const unvisited = new Set();
   const dist = {};
   const prev = {};
 
@@ -15,33 +15,33 @@ export function dijkstra(graph, start) {
     let currentMin = Infinity;
     let currentNode = undefined;
     unvisited.forEach(node => {
-      if(dist[node] < currentMin) {
+      if (dist[node] < currentMin) {
         currentMin = dist[node];
         currentNode = node;
       }
     });
 
     return currentNode;
-  }
+  };
 
-  while(unvisited.size) {
+  while (unvisited.size) {
     const u = getNodeWithMinDist();
 
-    if(!u) {
+    if (!u) {
       break;
     }
     unvisited.delete(u);
 
     graph[u].forEach(v => {
       const alt = dist[u] + 1;
-      if(alt < dist[v]) {
+      if (alt < dist[v]) {
         dist[v] = alt;
         prev[v] = u;
       }
     });
   }
 
-  return {dist, prev};
+  return { dist, prev };
 }
 
 export function getNodeFurthestAwayFrom(graph, ...nodes) {
@@ -49,11 +49,18 @@ export function getNodeFurthestAwayFrom(graph, ...nodes) {
 
   let currentMax = -Infinity;
   let currentNode = undefined;
+  let currentDiff = Infinity;
   Object.keys(graph).forEach(node => {
     const d = dist.reduce((acc, curr) => acc + curr[node], 0);
-    if(d > currentMax && d !== Infinity) {
+    const dists = dist.map(e => e[node]);
+    const spread = Math.max(...dists) - Math.min(...dists);
+    if (
+      d !== Infinity &&
+      (d > currentMax || (d === currentMax && spread < currentDiff))
+    ) {
       currentMax = d;
       currentNode = node;
+      currentDiff = spread;
     }
   });
 
@@ -64,7 +71,7 @@ export function removeNodeFromGraph(graph, nodeToRemove) {
   const newGraph = {};
 
   Object.keys(graph).forEach(node => {
-    if(node !== nodeToRemove) {
+    if (node !== nodeToRemove) {
       newGraph[node] = graph[node].filter(node => node !== nodeToRemove);
     }
   });

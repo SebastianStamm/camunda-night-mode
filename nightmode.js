@@ -14,7 +14,7 @@ import intro from "./intro.js";
 const scaleFactor = 0.2;
 
 window.enterNightMode = async xml => {
-  // await intro();
+  await intro();
   const viewer = new BpmnJS();
   viewer.importXML(xml, () => {
     const { min, max } = (reg => {

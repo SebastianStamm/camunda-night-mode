@@ -15,21 +15,16 @@ export default class ButtonStand {
         fragmentShader: shaders.buttonStandFragment
       })
     );
-  }
 
-  update(position, state) {
-    const ownPosition = this.mesh.parent.position;
-
-    if (
-      Math.abs(ownPosition.x - position.x) < 1 &&
-      Math.abs(ownPosition.y - position.y) < 1 &&
-      !state.openDoors.includes(this.id)
-    ) {
-      this.mesh.material.uniforms.uActive.value = 1;
-      return {
-        action: "openDoor",
-        id: this.id
-      };
-    }
+    this.mesh.onClick = evt => {
+      console.log("clicked mesh", evt);
+      if (evt.distance < 5 && evt.point.z > 1.2) {
+        this.mesh.material.uniforms.uActive.value = 1;
+        window.updateState({
+          action: "openDoor",
+          id
+        });
+      }
+    };
   }
 }

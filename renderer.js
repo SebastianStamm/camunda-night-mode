@@ -225,6 +225,8 @@ export default {
       }
     }
 
+    window.updateState = updateState;
+
     // window.pulsatingRedStarted = 0;
     function animate() {
       requestAnimationFrame(animate);
@@ -240,7 +242,9 @@ export default {
       moveColliding(camera.position, move, canvas, state);
 
       entities.forEach(entity => {
-        updateState(entity.update(camera.position, state));
+        if (entity.update) {
+          updateState(entity.update(camera.position, state));
+        }
       });
 
       // update a ripple
@@ -290,6 +294,20 @@ export default {
         camera.rotation.z -= movementX / 300;
         camera.rotation.x -= movementY / 300;
         camera.rotation.x = Math.max(Math.min(camera.rotation.x, Math.PI), 0);
+      }
+    });
+
+    renderer.domElement.addEventListener("click", e => {
+      const raycaster = new THREE.Raycaster();
+      raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
+
+      const intersects = raycaster.intersectObjects(scene.children, true);
+
+      if (intersects[0]) {
+        const obj = intersects[0].object;
+        if (obj && obj.onClick) {
+          obj.onClick(intersects[0]);
+        }
       }
     });
 

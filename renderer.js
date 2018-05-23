@@ -8,13 +8,16 @@ const height = 4;
 function createLevel(canvas, scene) {
   const wallShaderUniforms = {
     uLight: { value: new THREE.Vector3(0.0, 0, 0) },
-    uState: { value: window.locationsToUnlock }
+    uState: { value: window.locationsToUnlock },
+    uAnimationProgress: { value: 0 }
   };
 
   window.wallShaderUniforms = wallShaderUniforms;
 
   const canvasSize =
     2 ** Math.ceil(Math.log2(Math.max(canvas.width, canvas.height)));
+
+  window.nightFloorCanvasSize = canvasSize;
 
   const floorCanvas = document.createElement("canvas");
   floorCanvas.setAttribute("width", canvasSize);
@@ -23,6 +26,8 @@ function createLevel(canvas, scene) {
   const floorCtx = floorCanvas.getContext("2d");
   floorCtx.fillStyle = "rgba(20, 20, 20, 1)";
   floorCtx.fillRect(0, 0, canvasSize - 1, canvasSize - 1);
+
+  window.nightFloorCtx = floorCtx;
 
   document.body.appendChild(floorCanvas);
 
@@ -214,7 +219,10 @@ export default {
     function updateState(change) {
       if (change) {
         console.log("updating state", change);
-        if (change.action === "openDoor") {
+        if (
+          change.action === "openDoor" &&
+          state.openDoors.indexOf(change.id) === -1
+        ) {
           state.openDoors.push(change.id);
           floorShaderUniforms.uRippleCenter.value.x = camera.position.x;
           floorShaderUniforms.uRippleCenter.value.y = camera.position.y;
@@ -420,8 +428,35 @@ function updateGameProgression(state) {
       "Activate Process Utility";
   } else if (state === 5) {
     document.getElementById("currentTask").textContent = "Access Control Panel";
+  } else if (state === 4) {
+    document.getElementById("currentTask").textContent = "Turn the Light On!";
+  } else if (state === 3) {
+    // turn the light on fully
+    document.getElementById("currentTask").textContent =
+      "Restore Door Control System";
+
+    window.wallShaderUniforms.uState.value = state;
+    window.wallShaderUniforms.uAnimationProgress.value = 0;
+
+    new TWEEN.Tween(window.wallShaderUniforms.uAnimationProgress)
+      .to({ value: 1 }, 5000)
+      .easing(TWEEN.Easing.Quadratic.Out)
+      .onUpdate(() => {
+        const twofive =
+          255 * window.wallShaderUniforms.uAnimationProgress.value;
+        window.nightFloorCtx.fillStyle = `rgba(${twofive}, ${twofive}, ${twofive}, 1)`;
+        window.nightFloorCtx.fillRect(
+          0,
+          0,
+          window.nightFloorCanvasSize - 1,
+          window.nightFloorCanvasSize - 1
+        );
+      })
+      .start();
   }
 }
+
+window.updateGameProgression = updateGameProgression;
 
 function addCrosshair() {
   const cross = document.createElement("img");
@@ -502,11 +537,11 @@ function showUnlockNotification({ businessObject }) {
 window.nightOpenModal = function(type, id) {
   if (type === "operationSelection") {
     const container = document.createElement("div");
-    container.innerHTML = `<div style="width: 90vw; height: 90vh; position: absolute; top: 5vh; left: 5vw; border: 2px solid black; z-index: 1000002; background-color: white;">
+    container.innerHTML = `<div style="width: 90vw; height: 90vh; position: absolute; top: 5vh; left: 5vw; border: 2px solid black; z-index: 1000002; background-color: #282828; color: #0f6; font-family: monospace;">
     <center>
       <span style="font-size: 5em">Process Operation Control</span>
-      <div class="termination" style="width: 30vw; position: absolute; bottom: 2em; top: 7em; left: 10vw; border: 1px solid red; background-image: url(/camunda/app/cockpit/scripts/nightmode/termination/splash.jpg); background-size: 100% auto; background-repeat: no-repeat; background-color: black; cursor: pointer;"></div>
-      <div class="nightlight" style="width: 30vw; position: absolute; bottom: 2em; top: 7em; right: 10vw; border: 3px solid black;  cursor: pointer; background-color: lightgray;">
+      <div class="termination" style="width: 30vw; position: absolute; bottom: 2em; top: 9em; left: 10vw; border: 3px solid black; background-image: url(/camunda/app/cockpit/scripts/nightmode/termination/splash.jpg); background-size: 100% auto; background-repeat: no-repeat; background-color: black; cursor: pointer;"></div>
+      <div class="nightlight" style="width: 30vw; position: absolute; bottom: 2em; top: 9em; right: 10vw; border: 3px solid black; cursor: pointer; background-color: #242;">
         <span style="font-size: 14em;">💡</span>
         <br/>
         <br/>
@@ -541,8 +576,6 @@ window.nightOpenModal = function(type, id) {
     });
   }
 };
-
-// nightOpenModal("operationSelection");
 
 function playTermination() {
   const frame = document.createElement("iframe");

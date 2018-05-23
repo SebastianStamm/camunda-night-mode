@@ -51,6 +51,7 @@ export const wallFragment = `
 
   uniform vec3 uLight;
   uniform float uState;
+  uniform float uAnimationProgress;
 
   void main() {
     if(uState == 7.0) {
@@ -59,7 +60,7 @@ export const wallFragment = `
       } else {
         gl_FragColor = vec4(0.1,0.1,0.1,1.0);
       }
-    } else if(uState == 6.0) {
+    } else if(uState == 6.0 || uState == 3.0) {
       vec3 baseColor = vec3(0.1);
       vec3 highlightColor = uLight;
       vec3 color = baseColor;
@@ -69,9 +70,18 @@ export const wallFragment = `
       if(4.0 - vPosition.z < stripeWidth) {
         color = mix(highlightColor, baseColor, smoothstep(4.0, 4.0 - stripeWidth, vPosition.z));
       }
-      if(vPosition.z > 3.9 || vPosition.z < 0.1) {
-        color = vec3(0.7);
+
+      if(uState == 3.0) {
+        color = mix(color, vec3(1.0,1.0,1.0), uAnimationProgress);
+        if(vPosition.z > 3.9 || vPosition.z < 0.1) {
+          color = mix(vec3(0.7), vec3(0.0), uAnimationProgress);
+        }
+      } else {
+        if(vPosition.z > 3.9 || vPosition.z < 0.1) {
+          color = vec3(0.7);
+        }
       }
+
 
       gl_FragColor = vec4(color, 1.0);
     }

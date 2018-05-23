@@ -117,33 +117,14 @@ export const wallFragment = `
   }
 `;
 
-export const doorFragment = `
-  varying vec2 vUv;
-  varying vec3 vCol;
-  varying vec4 vPosition;
-  varying vec4 vRawPosition;
-
-  void main() {
-    vec3 color = vec3(0.0);
-    float lineThickness = 0.02;
-    if((fract(vRawPosition.x + 0.5) < lineThickness || fract(vRawPosition.x + 0.5) > 1.0 - lineThickness) && (fract(vRawPosition.y + 0.5) < lineThickness || fract(vRawPosition.y + 0.5) > 1.0 - lineThickness)) {
-      color = vec3(0.7, 0.0, 0.0);
-    } else {
-      color = vec3(0.1);
-    }
-
-    if(vRawPosition.z > 1.7 || vRawPosition.z < -1.7) {
-      color = vec3(0.7, 0.0, 0.0);
-    }
-
-    gl_FragColor = vec4(color, 1.0);
-  }
-`;
-
 export const buttonStandFragment = `
   varying vec4 vPosition;
 
   uniform float uActive;
+
+
+  ${THREE.ShaderChunk["common"]}
+  ${THREE.ShaderChunk["fog_pars_fragment"]}
 
   void main() {
     vec3 color = vec3(0.3);
@@ -156,5 +137,6 @@ export const buttonStandFragment = `
       }
     }
     gl_FragColor = vec4(color, 1.0);
+    ${THREE.ShaderChunk["fog_fragment"]}
   }
 `;

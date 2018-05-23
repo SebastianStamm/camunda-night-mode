@@ -147,8 +147,12 @@ function createLevel(canvas, scene) {
       canvasSize + ".0"
     ),
     uniforms: floorShaderUniforms,
-    fog: true
+    fog: true,
+    side: THREE.DoubleSide
   });
+
+  const floormesh = new THREE.Mesh(floorgeometry2, floormaterial2);
+  floormesh.position.set(canvas.width / 2 + 0.5, -canvas.height / 2 - 0.5, 4);
 
   const floormesh2 = new THREE.Mesh(floorgeometry2, floormaterial2);
   floormesh2.position.set(
@@ -156,6 +160,7 @@ function createLevel(canvas, scene) {
     -canvas.height / 2 - 0.5,
     -0.01
   );
+  scene.add(floormesh);
   scene.add(floormesh2);
 
   return {

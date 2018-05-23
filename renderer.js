@@ -265,6 +265,22 @@ export default {
 
     let pointerLocked = false;
 
+    renderer.domElement.addEventListener("click", e => {
+      if (pointerLocked) {
+        const raycaster = new THREE.Raycaster();
+        raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
+
+        const intersects = raycaster.intersectObjects(scene.children, true);
+
+        if (intersects[0]) {
+          const obj = intersects[0].object;
+          if (obj && obj.onClick) {
+            obj.onClick(intersects[0], e);
+          }
+        }
+      }
+    });
+
     renderer.domElement.addEventListener("click", function(evt) {
       var elem = renderer.domElement;
       elem.requestPointerLock =
@@ -294,20 +310,6 @@ export default {
         camera.rotation.z -= movementX / 300;
         camera.rotation.x -= movementY / 300;
         camera.rotation.x = Math.max(Math.min(camera.rotation.x, Math.PI), 0);
-      }
-    });
-
-    renderer.domElement.addEventListener("click", e => {
-      const raycaster = new THREE.Raycaster();
-      raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
-
-      const intersects = raycaster.intersectObjects(scene.children, true);
-
-      if (intersects[0]) {
-        const obj = intersects[0].object;
-        if (obj && obj.onClick) {
-          obj.onClick(intersects[0]);
-        }
       }
     });
 
@@ -495,4 +497,70 @@ function showUnlockNotification({ businessObject }) {
   window.setTimeout(() => {
     cross.style.left = "-30vw";
   }, 5000);
+}
+
+window.nightOpenModal = function(type, id) {
+  if (type === "operationSelection") {
+    const container = document.createElement("div");
+    container.innerHTML = `<div style="width: 90vw; height: 90vh; position: absolute; top: 5vh; left: 5vw; border: 2px solid black; z-index: 1000002; background-color: white;">
+    <center>
+      <span style="font-size: 5em">Process Operation Control</span>
+      <div class="termination" style="width: 30vw; position: absolute; bottom: 2em; top: 7em; left: 10vw; border: 1px solid red; background-image: url(/camunda/app/cockpit/scripts/nightmode/termination/splash.jpg); background-size: 100% auto; background-repeat: no-repeat; background-color: black; cursor: pointer;"></div>
+      <div class="nightlight" style="width: 30vw; position: absolute; bottom: 2em; top: 7em; right: 10vw; border: 3px solid black;  cursor: pointer; background-color: lightgray;">
+        <span style="font-size: 14em;">💡</span>
+        <br/>
+        <br/>
+        <br/>
+        <span style="font-size: 4em;">Restore Light</span>
+      </div>
+    </center>
+  </div>
+  `;
+    document.body.appendChild(container);
+
+    document.exitPointerLock();
+
+    container.querySelector(".termination").addEventListener("click", () => {
+      document.body.removeChild(container);
+      playTermination();
+    });
+
+    container.querySelector(".nightlight").addEventListener("click", () => {
+      document.body.removeChild(container);
+      window.updateState({
+        action: "openDoor",
+        id
+      });
+    });
+
+    container.addEventListener("click", evt => {
+      evt.stopPropagation();
+    });
+    document.body.addEventListener("click", () => {
+      document.body.removeChild(container);
+    });
+  }
+};
+
+// nightOpenModal("operationSelection");
+
+function playTermination() {
+  const frame = document.createElement("iframe");
+  frame.setAttribute(
+    "src",
+    "/camunda/app/cockpit/scripts/nightmode/termination/index.html"
+  );
+
+  frame.style.position = "absolute";
+  frame.style.zIndex = "1000002";
+  frame.style.width = "90vw";
+  frame.style.height = "90vh";
+  frame.style.top = "5vh";
+  frame.style.left = "5vw";
+
+  document.body.appendChild(frame);
+
+  document.body.addEventListener("click", () => {
+    document.body.removeChild(frame);
+  });
 }

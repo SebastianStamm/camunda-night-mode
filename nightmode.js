@@ -165,6 +165,7 @@ window.enterNightMode = async xml => {
     console.log(keyLocations, graph);
 
     window.locationsToUnlock = Object.keys(keyLocations).length;
+    window.roomIdToElementMap = {};
 
     // block all entries to nodes with access requirements
     let blockIdx = 1;
@@ -183,6 +184,8 @@ window.enterNightMode = async xml => {
             unlockLocation: keyLocations[id],
             blockedColor: openProp
           };
+
+          window.roomIdToElementMap[openProp] = elem;
 
           const unlockElem = viewer
             .get("elementRegistry")

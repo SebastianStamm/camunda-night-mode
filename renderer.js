@@ -213,13 +213,12 @@ export default {
 
     function updateState(change) {
       if (change) {
-        console.log("updating state", change);
+        console.log("updating state", change, window.roomIdToElementMap);
         if (change.action === "openDoor") {
           state.openDoors.push(change.id);
           floorShaderUniforms.uRippleCenter.value.x = camera.position.x;
           floorShaderUniforms.uRippleCenter.value.y = camera.position.y;
           floorShaderUniforms.uRippleProgress.value = 0;
-
           updateGameProgression(--window.locationsToUnlock);
         }
       }
@@ -377,9 +376,9 @@ export default {
     renderer.domElement.requestPointerLock();
     document.body.webkitRequestFullscreen();
 
-    updateGameProgression(window.locationsToUnlock);
-
     addCrosshair();
+    addQuestIndicator();
+    updateGameProgression(window.locationsToUnlock);
   }
 };
 
@@ -401,6 +400,8 @@ function updateGameProgression(state) {
     window.flashlight = flashlight;
 
     document.body.appendChild(flashlight);
+    document.getElementById("currentTask").textContent =
+      "Restore Emergency Lighting";
   } else if (state === 6) {
     // emergency lighting is restored
     window.wallShaderUniforms.uState.value = state;
@@ -411,8 +412,11 @@ function updateGameProgression(state) {
       .to({ x: 1 }, 5000)
       .easing(TWEEN.Easing.Quadratic.Out)
       .start();
-    // window.wallShaderUniforms.uLight.value.x =
-    // (Math.sin(delta / 3000 * 2 * Math.PI) + 1) / 2;
+
+    document.getElementById("currentTask").textContent =
+      "Activate Process Utility";
+  } else if (state === 5) {
+    document.getElementById("currentTask").textContent = "Access Control Panel";
   }
 }
 
@@ -432,6 +436,24 @@ function addCrosshair() {
   cross.style.transform = "scale(1.5)";
 
   window.crossHair = cross;
+
+  document.body.appendChild(cross);
+}
+
+function addQuestIndicator() {
+  const cross = document.createElement("div");
+  cross.style.position = "absolute";
+  cross.style.bottom = "20px";
+  cross.style.left = "20px";
+  cross.style.zIndex = "1000001";
+  cross.style.backgroundColor = "rgba(255,255,255, 0.7)";
+  cross.style.padding = "5px";
+  cross.style.transform = "scale(1.7)";
+  cross.style.transformOrigin = "bottom left";
+  cross.style.width = "14vw";
+
+  cross.innerHTML =
+    "<span style='float: left; font-size: 2em; margin-right: 20px;'>🏆</span><b>Current Task:</b><br/><span id='currentTask'></span>";
 
   document.body.appendChild(cross);
 }

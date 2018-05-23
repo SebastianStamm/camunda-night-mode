@@ -6,7 +6,6 @@ export default class ButtonStand {
 
     this.mesh = new THREE.Mesh(
       new THREE.CubeGeometry(0.2, 0.2, 2.8),
-      // new THREE.MeshBasicMaterial({ color: 0x00aa00 })
       new THREE.ShaderMaterial({
         uniforms: {
           uActive: { value: 0.0 }

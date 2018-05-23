@@ -213,12 +213,13 @@ export default {
 
     function updateState(change) {
       if (change) {
-        console.log("updating state", change, window.roomIdToElementMap);
+        console.log("updating state", change);
         if (change.action === "openDoor") {
           state.openDoors.push(change.id);
           floorShaderUniforms.uRippleCenter.value.x = camera.position.x;
           floorShaderUniforms.uRippleCenter.value.y = camera.position.y;
           floorShaderUniforms.uRippleProgress.value = 0;
+          showUnlockNotification(window.roomIdToElementMap[change.id]);
           updateGameProgression(--window.locationsToUnlock);
         }
       }
@@ -456,4 +457,42 @@ function addQuestIndicator() {
     "<span style='float: left; font-size: 2em; margin-right: 20px;'>🏆</span><b>Current Task:</b><br/><span id='currentTask'></span>";
 
   document.body.appendChild(cross);
+}
+
+function showUnlockNotification({ businessObject }) {
+  console.log("should show unlock notification for", businessObject);
+
+  const text =
+    businessObject.$type.substr(5) +
+    " " +
+    businessObject.name +
+    " is now unlocked";
+
+  const cross = document.createElement("div");
+  cross.style.position = "absolute";
+  cross.style.top = "20px";
+  cross.style.left = "-30vw";
+  cross.style.zIndex = "1000001";
+  cross.style.backgroundColor = "rgba(255,255,255, 0.7)";
+  cross.style.padding = "5px";
+  cross.style.transform = "scale(1.3)";
+  cross.style.transformOrigin = "top left";
+  cross.style.width = "22vw";
+  cross.style.transition = "1s";
+  cross.style.display = "table";
+
+  cross.innerHTML =
+    "<span style='float: left; font-size: 2em; margin-right: 20px;'>🔑</span><span style='display: table-cell; vertical-align: middle'>" +
+    text +
+    "</span></span>";
+
+  document.body.appendChild(cross);
+
+  window.setTimeout(() => {
+    cross.style.left = "20px";
+  }, 100);
+
+  window.setTimeout(() => {
+    cross.style.left = "-30vw";
+  }, 5000);
 }

@@ -3,6 +3,7 @@ export const commonVertex = `
   varying vec3 vCol;
   varying vec4 vPosition;
   varying vec4 vRawPosition;
+  ${THREE.ShaderChunk["fog_pars_vertex"]}
   void main() {
     vUv = uv;
     vCol = vec3(1.0,1.0,1.0);
@@ -10,6 +11,7 @@ export const commonVertex = `
     gl_Position = projectionMatrix * mvPosition;
     vPosition = modelMatrix * vec4( position, 1.0 );
     vRawPosition = vec4(position, 1.0);
+    ${THREE.ShaderChunk["fog_vertex"]}
   }
 `;
 
@@ -22,12 +24,14 @@ export const floorFragment = `
   uniform vec2 uRippleCenter;
   uniform sampler2D uColors;
 
+  ${THREE.ShaderChunk["common"]}
+  ${THREE.ShaderChunk["fog_pars_fragment"]}
+
   void main() {
     vec4 color = texture2D(uColors, vec2(floor(vPosition.x + 0.5) / %CANVAS_SIZE%, 1.0 - floor(-vPosition.y + 0.5) / %CANVAS_SIZE%));
     float lineThickness = 0.02;
     if(fract(vPosition.x + 0.5) < lineThickness || fract(vPosition.x + 0.5) > 1.0 - lineThickness || fract(vPosition.y + 0.5) < lineThickness || fract(vPosition.y + 0.5) > 1.0 - lineThickness) {
-      float distance = length(vPosition - vec4(cameraPosition.x, cameraPosition.y, 0.0, 1.0));
-      color = mix(vec4(0.3, 0.3, 0.3, 1.0), color, distance / 10.0);
+      color = vec4(0.3, 0.3, 0.3, 1.0);
     } else {
       if(uRippleProgress > 0.0) {
         float rippleWidth = 6.0;
@@ -41,6 +45,7 @@ export const floorFragment = `
     }
 
     gl_FragColor = color;
+    ${THREE.ShaderChunk["fog_fragment"]}
   }
 `;
 
@@ -52,6 +57,9 @@ export const wallFragment = `
   uniform vec3 uLight;
   uniform float uState;
   uniform float uAnimationProgress;
+
+  ${THREE.ShaderChunk["common"]}
+  ${THREE.ShaderChunk["fog_pars_fragment"]}
 
   void main() {
     if(uState == 7.0) {
@@ -105,6 +113,7 @@ export const wallFragment = `
 
       gl_FragColor = vec4(color, 1.0);
     }
+    ${THREE.ShaderChunk["fog_fragment"]}
   }
 `;
 

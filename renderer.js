@@ -6,11 +6,14 @@ const scaleFactor = 1;
 const height = 4;
 
 function createLevel(canvas, scene) {
-  const wallShaderUniforms = {
-    uLight: { value: new THREE.Vector3(0.0, 0, 0) },
-    uState: { value: window.locationsToUnlock },
-    uAnimationProgress: { value: 0 }
-  };
+  const wallShaderUniforms = THREE.UniformsUtils.merge([
+    THREE.UniformsLib["fog"],
+    {
+      uLight: { value: new THREE.Vector3(0.0, 0, 0) },
+      uState: { value: window.locationsToUnlock },
+      uAnimationProgress: { value: 0 }
+    }
+  ]);
 
   window.wallShaderUniforms = wallShaderUniforms;
 
@@ -31,12 +34,15 @@ function createLevel(canvas, scene) {
 
   document.body.appendChild(floorCanvas);
 
-  const floorShaderUniforms = {
-    uRippleProgress: { value: -1 },
-    uRippleCenter: { value: new THREE.Vector2(0, 0) },
-    uColors: { type: "t", value: new THREE.Texture(floorCanvas) },
-    uState: { value: window.locationsToUnlock }
-  };
+  const floorShaderUniforms = THREE.UniformsUtils.merge([
+    THREE.UniformsLib["fog"],
+    {
+      uRippleProgress: { value: -1 },
+      uRippleCenter: { value: new THREE.Vector2(0, 0) },
+      uColors: { type: "t", value: new THREE.Texture(floorCanvas) },
+      uState: { value: window.locationsToUnlock }
+    }
+  ]);
 
   floorShaderUniforms.uColors.value.generateMipmaps = false;
   floorShaderUniforms.uColors.value.minFilter = THREE.NearestFilter;
@@ -48,9 +54,12 @@ function createLevel(canvas, scene) {
     material: new THREE.ShaderMaterial({
       uniforms: wallShaderUniforms,
       vertexShader: shaders.commonVertex,
-      fragmentShader: shaders.wallFragment
+      fragmentShader: shaders.wallFragment,
+      fog: true
     })
   };
+
+  console.log("shader", shaders.wallFragment);
 
   let meshs = [];
   const entities = [];
@@ -137,7 +146,8 @@ function createLevel(canvas, scene) {
       /%CANVAS_SIZE%/g,
       canvasSize + ".0"
     ),
-    uniforms: floorShaderUniforms
+    uniforms: floorShaderUniforms,
+    fog: true
   });
 
   const floormesh2 = new THREE.Mesh(floorgeometry2, floormaterial2);
@@ -195,6 +205,8 @@ export default {
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(width, height);
+
+    scene.fog = new THREE.Fog(0x000000, 1, 40);
 
     const {
       entities,

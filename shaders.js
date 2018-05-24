@@ -20,9 +20,9 @@ export const floorFragment = `
   varying vec3 vCol;
   varying vec4 vPosition;
 
-  uniform float uRippleProgress;
-  uniform vec2 uRippleCenter;
   uniform sampler2D uColors;
+  uniform float uState;
+  uniform float uAnimationProgress;
 
   ${THREE.ShaderChunk["common"]}
   ${THREE.ShaderChunk["fog_pars_fragment"]}
@@ -31,16 +31,10 @@ export const floorFragment = `
     vec4 color = texture2D(uColors, vec2(floor(vPosition.x + 0.5) / %CANVAS_SIZE%, 1.0 - floor(-vPosition.y + 0.5) / %CANVAS_SIZE%));
     float lineThickness = 0.02;
     if(fract(vPosition.x + 0.5) < lineThickness || fract(vPosition.x + 0.5) > 1.0 - lineThickness || fract(vPosition.y + 0.5) < lineThickness || fract(vPosition.y + 0.5) > 1.0 - lineThickness) {
-      color = vec4(0.3, 0.3, 0.3, 1.0);
-    } else {
-      if(uRippleProgress > 0.0) {
-        float rippleWidth = 6.0;
-        float dist = length(vec2(floor(vPosition.x + 0.5), floor(vPosition.y + 0.5)) - uRippleCenter) - uRippleProgress;
-
-        if(abs(dist) < rippleWidth) {
-          // color = vec4(vec3(1.0 - abs(dist) / rippleWidth), 1.0);
-          color = mix(color, vec4(vec3(1.0 - abs(dist) / rippleWidth), 1.0), 1.0 - abs(dist) / rippleWidth);
-        }
+      if(uState == 3.0) {
+        color = vec4(mix(vec3(0.3), vec3(0.7), uAnimationProgress), 1.0);
+      } else {
+        color = vec4(0.3, 0.3, 0.3, 1.0);
       }
     }
 
@@ -73,10 +67,13 @@ export const wallFragment = `
       vec3 highlightColor = uLight;
       vec3 color = baseColor;
 
-      float stripeWidth = 3.0;
+      float stripeWidth = 1.8;
 
       if(4.0 - vPosition.z < stripeWidth) {
         color = mix(highlightColor, baseColor, smoothstep(4.0, 4.0 - stripeWidth, vPosition.z));
+      }
+      if(vPosition.z < stripeWidth) {
+        color = mix(highlightColor, baseColor, smoothstep(0.0, stripeWidth, vPosition.z));
       }
 
       if(uState == 3.0) {
@@ -89,7 +86,6 @@ export const wallFragment = `
           color = vec3(0.7);
         }
       }
-
 
       gl_FragColor = vec4(color, 1.0);
     }

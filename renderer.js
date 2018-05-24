@@ -37,16 +37,16 @@ function createLevel(canvas, scene) {
   const floorShaderUniforms = THREE.UniformsUtils.merge([
     THREE.UniformsLib["fog"],
     {
-      uRippleProgress: { value: -1 },
-      uRippleCenter: { value: new THREE.Vector2(0, 0) },
       uColors: { type: "t", value: new THREE.Texture(floorCanvas) },
-      uState: { value: window.locationsToUnlock }
+      uState: { value: window.locationsToUnlock },
+      uAnimationProgress: { value: 0 }
     }
   ]);
 
   floorShaderUniforms.uColors.value.generateMipmaps = false;
   floorShaderUniforms.uColors.value.minFilter = THREE.NearestFilter;
   floorShaderUniforms.uColors.value.magFilter = THREE.NearestFilter;
+  window.floorShaderUniforms = floorShaderUniforms;
 
   const tiles = [];
   tiles[1] = {
@@ -58,8 +58,6 @@ function createLevel(canvas, scene) {
       fog: true
     })
   };
-
-  console.log("shader", shaders.wallFragment);
 
   let meshs = [];
   const entities = [];
@@ -241,9 +239,6 @@ export default {
           state.openDoors.indexOf(change.id) === -1
         ) {
           state.openDoors.push(change.id);
-          floorShaderUniforms.uRippleCenter.value.x = camera.position.x;
-          floorShaderUniforms.uRippleCenter.value.y = camera.position.y;
-          floorShaderUniforms.uRippleProgress.value = 0;
           showUnlockNotification(window.roomIdToElementMap[change.id]);
           updateGameProgression(--window.locationsToUnlock);
         }
@@ -272,12 +267,6 @@ export default {
         }
       });
 
-      // update a ripple
-      if (floorShaderUniforms.uRippleProgress.value >= 0) {
-        floorShaderUniforms.uRippleProgress.value += 0.4;
-      }
-
-      // debugger;
       floorShaderUniforms.uColors.value.needsUpdate = true;
 
       // make light glow
@@ -433,12 +422,17 @@ function updateGameProgression(state) {
   } else if (state === 6) {
     // emergency lighting is restored
     window.wallShaderUniforms.uState.value = state;
-    window.flashlight.style.opacity = "0";
+
+    if (window.flashlight) {
+      window.flashlight.style.opacity = "0";
+    }
 
     // window.pulsatingRedStarted = Date.now();
-    new TWEEN.Tween(window.wallShaderUniforms.uLight.value)
-      .to({ x: 1 }, 5000)
-      .easing(TWEEN.Easing.Quadratic.Out)
+    window.lightpulse = new TWEEN.Tween(window.wallShaderUniforms.uLight.value)
+      .to({ x: 1 }, 600)
+      .easing(TWEEN.Easing.Linear.None)
+      .repeat(Infinity)
+      .yoyo(true)
       .start();
 
     document.getElementById("currentTask").textContent =
@@ -454,11 +448,15 @@ function updateGameProgression(state) {
 
     window.wallShaderUniforms.uState.value = state;
     window.wallShaderUniforms.uAnimationProgress.value = 0;
+    window.floorShaderUniforms.uState.value = state;
+    window.floorShaderUniforms.uAnimationProgress.value = 0;
 
     new TWEEN.Tween(window.wallShaderUniforms.uAnimationProgress)
       .to({ value: 1 }, 5000)
       .easing(TWEEN.Easing.Quadratic.Out)
       .onUpdate(() => {
+        window.floorShaderUniforms.uAnimationProgress.value =
+          window.wallShaderUniforms.uAnimationProgress.value;
         const twofive =
           255 * window.wallShaderUniforms.uAnimationProgress.value;
         window.nightFloorCtx.fillStyle = `rgba(${twofive}, ${twofive}, ${twofive}, 1)`;
@@ -468,6 +466,11 @@ function updateGameProgression(state) {
           window.nightFloorCanvasSize - 1,
           window.nightFloorCanvasSize - 1
         );
+      })
+      .onComplete(() => {
+        if (window.lightpulse) {
+          window.lightpulse.stop();
+        }
       })
       .start();
   }
@@ -506,6 +509,7 @@ function addQuestIndicator() {
   cross.style.transform = "scale(1.7)";
   cross.style.transformOrigin = "bottom left";
   cross.style.width = "14vw";
+  cross.style.border = "2px solid black";
 
   cross.innerHTML =
     "<span style='float: left; font-size: 2em; margin-right: 20px;'>🏆</span><b>Current Task:</b><br/><span id='currentTask'></span>";
@@ -534,6 +538,7 @@ function showUnlockNotification({ businessObject }) {
   cross.style.width = "22vw";
   cross.style.transition = "1s";
   cross.style.display = "table";
+  cross.style.border = "2px solid black";
 
   cross.innerHTML =
     "<span style='float: left; font-size: 2em; margin-right: 20px;'>🔑</span><span style='display: table-cell; vertical-align: middle'>" +

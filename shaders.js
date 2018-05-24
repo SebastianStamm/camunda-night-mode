@@ -133,7 +133,7 @@ export const buttonStandFragment = `
       }
     }
 
-    if(uState == 3.0) {
+    if(uState <= 3.0) {
       color = mix(color, vec3(1.0), 0.5);
     }
     gl_FragColor = vec4(color, 1.0);

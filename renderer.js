@@ -240,7 +240,10 @@ export default {
         ) {
           state.openDoors.push(change.id);
           showUnlockNotification(window.roomIdToElementMap[change.id]);
-          updateGameProgression(--window.locationsToUnlock);
+          updateGameProgression(
+            --window.locationsToUnlock,
+            window.roomIdToElementMap[change.id]
+          );
         }
       }
     }
@@ -399,7 +402,7 @@ export default {
   }
 };
 
-function updateGameProgression(state) {
+function updateGameProgression(state, unlockedRoom) {
   if (state === 7) {
     // initial state, ensure dark and flashlight
     const flashlight = document.createElement("div");
@@ -474,6 +477,8 @@ function updateGameProgression(state) {
       })
       .start();
   }
+
+  narrate(state, unlockedRoom);
 }
 
 window.updateGameProgression = updateGameProgression;
@@ -619,3 +624,79 @@ function playTermination() {
     document.body.removeChild(frame);
   });
 }
+
+function narrate(state, unlockedRoom) {
+  if (!unlockedRoom) {
+    return;
+  }
+  console.log(unlockedRoom);
+
+  const synth = window.speechSynthesis;
+
+  const bo = unlockedRoom.businessObject;
+  const type = bo.$type.substr(5);
+  const name = bo.name;
+
+  switch (state) {
+    case 5: {
+      var sound = new Howl({
+        src: ["/camunda/app/cockpit/scripts/nightmode/sounds/startup.mp3"]
+      });
+
+      sound.play();
+
+      window.setTimeout(() => {
+        const utterThis = new SpeechSynthesisUtterance(
+          "Process Utility Activated! Please Proceed to the Control Panel in " +
+            type +
+            " " +
+            name
+        );
+
+        utterThis.voice = synth
+          .getVoices()
+          .find(({ name }) => name === "Google UK English Female");
+        utterThis.pitch = 1;
+        utterThis.rate = 1;
+        synth.speak(utterThis);
+      }, 2500);
+      break;
+    }
+    case 4: {
+      const utterThis = new SpeechSynthesisUtterance(
+        "Light Restoration Procedure started. Turn on the Light in " +
+          type +
+          " " +
+          name
+      );
+
+      utterThis.voice = synth
+        .getVoices()
+        .find(({ name }) => name === "Google UK English Female");
+      utterThis.pitch = 1;
+      utterThis.rate = 1;
+
+      synth.speak(utterThis);
+      break;
+    }
+    case 3: {
+      const utterThis = new SpeechSynthesisUtterance(
+        "Light restored. To leave the Emergency Energy Restoration Procedure, override the door control component in " +
+          type +
+          " " +
+          name
+      );
+
+      utterThis.voice = synth
+        .getVoices()
+        .find(({ name }) => name === "Google UK English Female");
+      utterThis.pitch = 1;
+      utterThis.rate = 1;
+
+      synth.speak(utterThis);
+      break;
+    }
+  }
+}
+
+window.narrate = narrate;

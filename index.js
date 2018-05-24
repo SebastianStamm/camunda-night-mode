@@ -49,7 +49,7 @@ define(["angular"], function(angular) {
   document.head.appendChild(TWEEN);
   document.head.appendChild(font);
 
-  window.setTimeout(() => document.head.appendChild(nightModeScript), 2000);
+  window.setTimeout(() => document.head.appendChild(nightModeScript), 2500);
 
   window.speechSynthesis.getVoices();
 

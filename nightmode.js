@@ -15,6 +15,7 @@ const scaleFactor = 0.2;
 
 window.enterNightMode = async xml => {
   // await intro();
+  window.roomLabelMap = [];
   const viewer = new BpmnJS();
   viewer.importXML(xml, () => {
     const { min, max } = (reg => {
@@ -206,9 +207,34 @@ window.enterNightMode = async xml => {
           );
         }
 
+        const labelPos = {
+          n: true,
+          e: true,
+          s: true,
+          w: true
+        };
+
+        const nodeElem = elem;
+
+        // add doors
         elem.incoming
           .filter(({ type }) => type === "bpmn:SequenceFlow")
           .forEach(elem => {
+            // update labelPos
+            const last = elem.waypoints[elem.waypoints.length - 1];
+            if (last.x === nodeElem.x) {
+              labelPos.w = false;
+            }
+            if (last.x === nodeElem.x + nodeElem.width) {
+              labelPos.e = false;
+            }
+            if (last.y === nodeElem.y) {
+              labelPos.n = false;
+            }
+            if (last.y === nodeElem.y + nodeElem.height) {
+              labelPos.s = false;
+            }
+
             const start = {
               x:
                 (elem.waypoints[elem.waypoints.length - 1].x + offset.x) *
@@ -248,6 +274,20 @@ window.enterNightMode = async xml => {
         elem.outgoing
           .filter(({ type }) => type === "bpmn:SequenceFlow")
           .forEach(elem => {
+            const last = elem.waypoints[0];
+            if (last.x === nodeElem.x) {
+              labelPos.w = false;
+            }
+            if (last.x === nodeElem.x + nodeElem.width) {
+              labelPos.e = false;
+            }
+            if (last.y === nodeElem.y) {
+              labelPos.n = false;
+            }
+            if (last.y === nodeElem.y + nodeElem.height) {
+              labelPos.s = false;
+            }
+
             const start = {
               x: (elem.waypoints[0].x + offset.x) * scaleFactor,
               y: (elem.waypoints[0].y + offset.y) * scaleFactor
@@ -276,7 +316,37 @@ window.enterNightMode = async xml => {
               "rgba(" + openProp + ", 2, " + orientation + ", 1)";
             ctx.stroke();
           });
-      }
+
+        console.log("label pos for", elem, labelPos);
+
+        // place the room label
+        const nodeLabel = ctx.createImageData(1, 1);
+        nodeLabel.data[0] = 255;
+        nodeLabel.data[1] = 4;
+        nodeLabel.data[2] = window.roomLabelMap.length;
+        nodeLabel.data[3] = 255;
+        if (labelPos.n) {
+          window.roomLabelMap.push({
+            name: elem.businessObject.name,
+            orientation: "n"
+          });
+          ctx.putImageData(
+            nodeLabel,
+            Math.round((elem.x + offset.x + elem.width / 2) * scaleFactor),
+            Math.round((elem.y + offset.y) * scaleFactor)
+          );
+        } else if (labelPos.s) {
+          window.roomLabelMap.push({
+            name: elem.businessObject.name,
+            orientation: "s"
+          });
+          ctx.putImageData(
+            nodeLabel,
+            Math.round((elem.x + offset.x + elem.width / 2) * scaleFactor),
+            Math.round((elem.y + offset.y + elem.height) * scaleFactor) - 1
+          );
+        }
+      } // end is flow node
     });
 
     const startPosition = {

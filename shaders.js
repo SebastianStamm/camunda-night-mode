@@ -117,7 +117,7 @@ export const buttonStandFragment = `
   varying vec4 vPosition;
 
   uniform float uActive;
-
+  uniform float uState;
 
   ${THREE.ShaderChunk["common"]}
   ${THREE.ShaderChunk["fog_pars_fragment"]}
@@ -131,6 +131,10 @@ export const buttonStandFragment = `
       } else {
         color = vec3(0.7,0.0, 0.0);
       }
+    }
+
+    if(uState == 3.0) {
+      color = mix(color, vec3(1.0), 0.5);
     }
     gl_FragColor = vec4(color, 1.0);
     ${THREE.ShaderChunk["fog_fragment"]}

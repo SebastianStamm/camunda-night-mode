@@ -11,7 +11,8 @@ export default class ButtonStand {
         uniforms: THREE.UniformsUtils.merge([
           THREE.UniformsLib["fog"],
           {
-            uActive: { value: 0.0 }
+            uActive: { value: 0.0 },
+            uState: { value: 0.0 }
           }
         ]),
         vertexShader: shaders.commonVertex,
@@ -36,5 +37,9 @@ export default class ButtonStand {
         }
       }
     };
+  }
+
+  update() {
+    this.mesh.material.uniforms.uState.value = window.locationsToUnlock;
   }
 }

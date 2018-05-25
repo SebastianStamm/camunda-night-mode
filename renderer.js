@@ -241,7 +241,7 @@ export default {
           state.openDoors.indexOf(change.id) === -1
         ) {
           state.openDoors.push(change.id);
-          showUnlockNotification(window.roomIdToElementMap[change.id]);
+          // showUnlockNotification(window.roomIdToElementMap[change.id]);
           updateGameProgression(
             --window.locationsToUnlock,
             window.roomIdToElementMap[change.id]
@@ -543,28 +543,28 @@ function addQuestIndicator() {
   cross.style.border = "2px solid black";
 
   cross.innerHTML =
-    "<span style='float: left; font-size: 2em; margin-right: 20px;'>🏆</span><b>Current Task:</b><br/><span id='currentTask'></span>";
+    "<span style='float: left; font-size: 2em; margin-right: 20px;'>🏃</span><b>Current Task:</b><br/><span id='currentTask'></span>";
 
   document.body.appendChild(cross);
 }
 
-function showUnlockNotification({ businessObject }) {
-  console.log("should show unlock notification for", businessObject);
+function showUnlockNotification(text) {
+  // console.log("should show unlock notification for", businessObject);
 
-  const text =
-    businessObject.$type.substr(5) +
-    " " +
-    businessObject.name +
-    " is now unlocked";
+  // const text =
+  //   businessObject.$type.substr(5) +
+  //   " " +
+  //   businessObject.name +
+  //   " is now unlocked";
 
   const cross = document.createElement("div");
   cross.style.position = "absolute";
   cross.style.top = "20px";
-  cross.style.left = "-30vw";
+  cross.style.left = "-40vw";
   cross.style.zIndex = "1000001";
   cross.style.backgroundColor = "rgba(255,255,255, 0.7)";
   cross.style.padding = "5px";
-  cross.style.transform = "scale(1.3)";
+  cross.style.transform = "scale(1.5)";
   cross.style.transformOrigin = "top left";
   cross.style.width = "22vw";
   cross.style.transition = "1s";
@@ -572,7 +572,7 @@ function showUnlockNotification({ businessObject }) {
   cross.style.border = "2px solid black";
 
   cross.innerHTML =
-    "<span style='float: left; font-size: 2em; margin-right: 20px;'>🔑</span><span style='display: table-cell; vertical-align: middle'>" +
+    "<span style='float: left; font-size: 2em; margin-right: 20px;'>🏆</span><span style='display: table-cell; vertical-align: middle'>" +
     text +
     "</span></span>";
 
@@ -583,8 +583,8 @@ function showUnlockNotification({ businessObject }) {
   }, 100);
 
   window.setTimeout(() => {
-    cross.style.left = "-30vw";
-  }, 5000);
+    cross.style.left = "-40vw";
+  }, text.length * 80);
 }
 
 window.nightOpenModal = function(type, id) {
@@ -665,36 +665,32 @@ function narrate(state, unlockedRoom) {
 
   switch (state) {
     case 5: {
-      var sound = new Howl({
-        src: ["/camunda/app/cockpit/scripts/nightmode/sounds/startup.mp3"]
-      });
+      const str =
+        "Process Utility Activated! Please Proceed to the Control Panel in " +
+        type +
+        " " +
+        name;
 
-      sound.play();
+      showUnlockNotification(str);
+      const utterThis = new SpeechSynthesisUtterance(str);
 
-      window.setTimeout(() => {
-        const utterThis = new SpeechSynthesisUtterance(
-          "Process Utility Activated! Please Proceed to the Control Panel in " +
-            type +
-            " " +
-            name
-        );
-
-        utterThis.voice = synth
-          .getVoices()
-          .find(({ name }) => name === "Google UK English Female");
-        utterThis.pitch = 1;
-        utterThis.rate = 1;
-        synth.speak(utterThis);
-      }, 2500);
+      utterThis.voice = synth
+        .getVoices()
+        .find(({ name }) => name === "Google UK English Female");
+      utterThis.pitch = 1;
+      utterThis.rate = 1;
+      synth.speak(utterThis);
       break;
     }
     case 4: {
-      const utterThis = new SpeechSynthesisUtterance(
+      const str =
         "Light Restoration Procedure started. Turn on the Light in " +
-          type +
-          " " +
-          name
-      );
+        type +
+        " " +
+        name;
+      showUnlockNotification(str);
+
+      const utterThis = new SpeechSynthesisUtterance(str);
 
       utterThis.voice = synth
         .getVoices()
@@ -706,12 +702,14 @@ function narrate(state, unlockedRoom) {
       break;
     }
     case 3: {
-      const utterThis = new SpeechSynthesisUtterance(
+      const str =
         "Light restored. To leave the Emergency Energy Restoration Procedure, override the door control component in " +
-          type +
-          " " +
-          name
-      );
+        type +
+        " " +
+        name;
+
+      showUnlockNotification(str);
+      const utterThis = new SpeechSynthesisUtterance(str);
 
       utterThis.voice = synth
         .getVoices()

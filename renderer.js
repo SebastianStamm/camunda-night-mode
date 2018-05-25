@@ -300,13 +300,17 @@ export default {
       }
     });
 
-    renderer.domElement.addEventListener("click", function(evt) {
-      var elem = renderer.domElement;
+    window.nightRequestPointerLock = () => {
+      const elem = renderer.domElement;
       elem.requestPointerLock =
         elem.requestPointerLock ||
         elem.mozRequestPointerLock ||
         elem.webkitRequestPointerLock;
       elem.requestPointerLock();
+    };
+
+    renderer.domElement.addEventListener("click", function(evt) {
+      window.nightRequestPointerLock();
     });
 
     var pointerLockChange = function(evt) {
@@ -619,6 +623,7 @@ window.nightOpenModal = function(type, id) {
         action: "openDoor",
         id
       });
+      window.nightRequestPointerLock();
     });
 
     container.addEventListener("click", evt => {
@@ -626,6 +631,7 @@ window.nightOpenModal = function(type, id) {
     });
     document.body.addEventListener("click", () => {
       document.body.removeChild(container);
+      window.nightRequestPointerLock();
     });
   }
 };
@@ -648,6 +654,7 @@ function playTermination() {
 
   document.body.addEventListener("click", () => {
     document.body.removeChild(frame);
+    window.nightRequestPointerLock();
   });
 }
 

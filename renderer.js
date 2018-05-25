@@ -207,8 +207,12 @@ export default {
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.001, 100);
 
     window.nightCamera = camera;
+    window.globalRenderState = 1;
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    const renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      preserveDrawingBuffer: true
+    });
     renderer.setSize(width, height);
 
     scene.fog = new THREE.Fog(0x000000, 1, 40);
@@ -278,7 +282,26 @@ export default {
       // const delta = Date.now() - window.pulsatingRedStarted;
       // wallShaderUniforms.uLight.value.x =
       //   (Math.sin(delta / 3000 * 2 * Math.PI) + 1) / 2;
+
       renderer.render(scene, camera);
+      if (window.globalRenderState === 2) {
+        const data = renderer.domElement.toDataURL();
+        const img = new Image();
+        img.addEventListener("load", () => {
+          glitch({ seed: 25, quality: 30 })
+            .fromImage(img)
+            .toDataURL()
+            .then(function(dataURL) {
+              // console.log("have data url", dataURL);
+              window.glitchedOverlay.src = dataURL;
+              // debugger;
+            });
+        });
+
+        img.src = data;
+
+        // debugger;
+      }
     }
     animate();
 
@@ -395,6 +418,14 @@ export default {
 
     document.body.appendChild(renderer.domElement);
 
+    window.glitchedOverlay = document.createElement("img");
+    window.glitchedOverlay.style.position = "absolute";
+    window.glitchedOverlay.style.top = "0";
+    window.glitchedOverlay.style.left = "0";
+    window.glitchedOverlay.style.right = "0";
+    window.glitchedOverlay.style.bottom = "0";
+    window.glitchedOverlay.style.zIndex = "100000";
+
     renderer.domElement.requestPointerLock();
     document.body.webkitRequestFullscreen();
 
@@ -502,6 +533,8 @@ function updateGameProgression(state, unlockedRoom) {
         );
       })
       .start();
+  } else if (state === 2) {
+    window.setTimeout(throwError, 2000);
   }
 
   narrate(state, unlockedRoom);
@@ -720,7 +753,75 @@ function narrate(state, unlockedRoom) {
       synth.speak(utterThis);
       break;
     }
+    case 2: {
+      const str = "Overriding Door Control. Please stand by.";
+      showUnlockNotification(str);
+      const utterThis = new SpeechSynthesisUtterance(str);
+
+      utterThis.voice = synth
+        .getVoices()
+        .find(({ name }) => name === "Google UK English Female");
+      utterThis.pitch = 1;
+      utterThis.rate = 1;
+
+      synth.speak(utterThis);
+      break;
+    }
   }
 }
 
 window.narrate = narrate;
+
+function throwError() {
+  const errorOverlay = document.createElement("div");
+
+  errorOverlay.style.position = "absolute";
+  errorOverlay.style.zIndex = "1000005";
+  errorOverlay.style.top = "0";
+  errorOverlay.style.bottom = "0";
+  errorOverlay.style.left = "0";
+  errorOverlay.style.right = "0";
+  errorOverlay.style.background = "#0000aa";
+  // color:#ffffff;
+  // font-family:courier;
+  // font-size:12pt;
+  // text-align:center;
+  // margin:100px;
+  errorOverlay.style.color = "white";
+  errorOverlay.style.fontFamily = "courier";
+  errorOverlay.style.fontSize = "24pt";
+  errorOverlay.style.textAlign = "center";
+  errorOverlay.style.padding = "100px";
+
+  errorOverlay.innerHTML = `<span style="    background:#fff;
+  color:#0000aa;
+  padding:2px 8px;
+  font-weight:bold;">UNAUTHORIZED ACCESS</span>
+  <p style="    margin:30px 100px;">
+  An authorized attempt to override the door control system has been detected.<br />For security reasons, the process definition will now be deleted.
+  </p>`;
+
+  document.body.appendChild(errorOverlay);
+
+  window.setTimeout(() => {
+    const synth = window.speechSynthesis;
+
+    const utterThis = new SpeechSynthesisUtterance(
+      "An authorized attempt to override the door control system has been detected. For security reasons, the process definition will now be deleted."
+    );
+    utterThis.voice = synth
+      .getVoices()
+      .find(({ name }) => name === "Google UK English Male");
+    utterThis.pitch = 0.5;
+    utterThis.rate = 0.9;
+
+    synth.speak(utterThis);
+    window.globalRenderState = 2;
+  }, 1000);
+
+  window.setTimeout(() => {
+    document.body.removeChild(errorOverlay);
+  }, 7000);
+}
+
+window.throwError = throwError;

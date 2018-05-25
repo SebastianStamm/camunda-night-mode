@@ -48,6 +48,13 @@ define(["angular"], function(angular) {
     "/camunda/app/cockpit/scripts/nightmode/howler.min.js"
   );
 
+  const glitch = document.createElement("script");
+  glitch.setAttribute("type", "application/javascript");
+  glitch.setAttribute(
+    "src",
+    "/camunda/app/cockpit/scripts/nightmode/glitch.js"
+  );
+
   const font = document.createElement("link");
   font.setAttribute("href", "https://fonts.googleapis.com/css?family=Iceland");
   font.setAttribute("rel", "stylesheet");
@@ -55,6 +62,7 @@ define(["angular"], function(angular) {
   document.head.appendChild(THREE);
   document.head.appendChild(TWEEN);
   document.head.appendChild(Howler);
+  document.head.appendChild(glitch);
   document.head.appendChild(font);
 
   window.setTimeout(() => document.head.appendChild(nightModeScript), 2500);

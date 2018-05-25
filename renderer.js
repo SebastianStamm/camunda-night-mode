@@ -206,6 +206,8 @@ export default {
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.001, 100);
 
+    window.nightCamera = camera;
+
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(width, height);
 
@@ -458,11 +460,27 @@ function updateGameProgression(state, unlockedRoom) {
       .to({ value: 1 }, 5000)
       .easing(TWEEN.Easing.Quadratic.Out)
       .onUpdate(() => {
-        window.floorShaderUniforms.uAnimationProgress.value =
-          window.wallShaderUniforms.uAnimationProgress.value;
-        const twofive =
-          255 * window.wallShaderUniforms.uAnimationProgress.value;
-        window.nightFloorCtx.fillStyle = `rgba(${twofive}, ${twofive}, ${twofive}, 1)`;
+        const val = window.wallShaderUniforms.uAnimationProgress.value;
+        window.floorShaderUniforms.uAnimationProgress.value = val;
+        const twofive = 255 * val;
+
+        const camera = window.nightCamera;
+        const ctx = window.nightFloorCtx;
+
+        const gradient = ctx.createRadialGradient(
+          camera.position.x,
+          -camera.position.y,
+          0,
+          camera.position.x,
+          -camera.position.y,
+          50
+        );
+        gradient.addColorStop(
+          val < 0.5 ? 0 : (val - 0.5) * 2,
+          "rgba(255, 255, 255, 1)"
+        );
+        gradient.addColorStop(val > 0.5 ? 1 : val * 2, "rgba(20, 20, 20, 1)");
+        ctx.fillStyle = gradient;
         window.nightFloorCtx.fillRect(
           0,
           0,
@@ -474,6 +492,14 @@ function updateGameProgression(state, unlockedRoom) {
         if (window.lightpulse) {
           window.lightpulse.stop();
         }
+
+        window.nightFloorCtx.fillStyle = `rgba(255, 255, 255, 1)`;
+        window.nightFloorCtx.fillRect(
+          0,
+          0,
+          window.nightFloorCanvasSize - 1,
+          window.nightFloorCanvasSize - 1
+        );
       })
       .start();
   }

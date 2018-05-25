@@ -21,9 +21,13 @@ export default class ButtonStand {
       })
     );
     this.mesh.onClick = (evt, mouseEvt) => {
-      console.log("clicked mesh", evt);
       if (evt.distance < 5 && evt.point.z > 1.2 && !this.active) {
         if (window.locationsToUnlock === 5) {
+          var sound = new Howl({
+            src: ["/camunda/app/cockpit/scripts/nightmode/sounds/terminal.wav"]
+          });
+
+          sound.play();
           window.nightOpenModal("operationSelection", id);
           mouseEvt.stopPropagation();
         } else {

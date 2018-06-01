@@ -140,3 +140,18 @@ export const buttonStandFragment = `
     ${THREE.ShaderChunk["fog_fragment"]}
   }
 `;
+
+export const floorButtonFragment = `
+  varying vec4 vPosition;
+
+  ${THREE.ShaderChunk["common"]}
+  ${THREE.ShaderChunk["fog_pars_fragment"]}
+
+  void main() {
+    vec3 color = vec3(0.3);
+
+    gl_FragColor = mix(vec4(0.0,0.7,0.0,1.0),vec4(0.0,0.7,0.0,0.0), vPosition.z / 1.4);
+
+    ${THREE.ShaderChunk["fog_fragment"]}
+  }
+`;

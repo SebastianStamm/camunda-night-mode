@@ -31,6 +31,7 @@ function createLevel(canvas, scene) {
   floorCtx.fillRect(0, 0, canvasSize - 1, canvasSize - 1);
 
   window.nightFloorCtx = floorCtx;
+  window.nightFloor = floorCanvas;
 
   document.body.appendChild(floorCanvas);
 
@@ -183,7 +184,7 @@ function moveColliding(position, move, canvas, state) {
     1,
     1
   ).data[0];
-  if (cx === 255 || state.openDoors.includes(cx)) {
+  if (cx === 255 || state.openDoors.includes(cx) || window.noCollide) {
     position.x = newPosition.x;
   }
 
@@ -193,7 +194,7 @@ function moveColliding(position, move, canvas, state) {
     1,
     1
   ).data[0];
-  if (cy === 255 || state.openDoors.includes(cy)) {
+  if (cy === 255 || state.openDoors.includes(cy) || window.noCollide) {
     position.y = newPosition.y;
   }
 }
@@ -207,6 +208,7 @@ export default {
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.001, 100);
 
     window.nightCamera = camera;
+    const gameDone = false;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(width, height);
@@ -233,6 +235,7 @@ export default {
 
     const movementVector = new THREE.Vector2(0, 0);
 
+    let forceTermination = false;
     function updateState(change) {
       if (change) {
         console.log("updating state", change);
@@ -248,13 +251,38 @@ export default {
             state.openDoors
           );
         }
+        if (change.action === "endGame") {
+          new TWEEN.Tween(camera.position)
+            .to({ z: 4 }, 3000)
+            .easing(TWEEN.Easing.Linear.None)
+            .start();
+
+          renderer.domElement.style.transition = "opacity 3s";
+
+          window.setTimeout(() => {
+            renderer.domElement.style.opacity = "0";
+          }, 100);
+
+          window.setTimeout(() => {
+            forceTermination = true;
+            document.body.removeChild(renderer.domElement);
+            document.body.removeChild(document.getElementById("nightQuest"));
+            document.body.removeChild(document.getElementById("nightCross"));
+            document.body.removeChild(window.flashlight);
+            document.body.removeChild(window.nightFloor);
+            document.exitPointerLock();
+            document.webkitExitFullscreen();
+          }, 3100);
+        }
       }
     }
 
     window.updateState = updateState;
 
-    // window.pulsatingRedStarted = 0;
     function animate() {
+      if (forceTermination) {
+        return;
+      }
       requestAnimationFrame(animate);
 
       TWEEN.update();
@@ -274,11 +302,6 @@ export default {
       });
 
       floorShaderUniforms.uColors.value.needsUpdate = true;
-
-      // make light glow
-      // const delta = Date.now() - window.pulsatingRedStarted;
-      // wallShaderUniforms.uLight.value.x =
-      //   (Math.sin(delta / 3000 * 2 * Math.PI) + 1) / 2;
       renderer.render(scene, camera);
     }
     animate();
@@ -534,6 +557,7 @@ function addCrosshair() {
   cross.style.zIndex = "100000";
   cross.style.filter = "invert(1)";
   cross.style.transform = "scale(1.5)";
+  cross.id = "nightCross";
 
   window.crossHair = cross;
 
@@ -555,6 +579,8 @@ function addQuestIndicator() {
 
   cross.innerHTML =
     "<span style='float: left; font-size: 2em; margin-right: 20px;'>🏃</span><b>Current Task:</b><br/><span id='currentTask'></span>";
+
+  cross.id = "nightQuest";
 
   document.body.appendChild(cross);
 }

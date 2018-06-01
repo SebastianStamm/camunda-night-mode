@@ -178,6 +178,23 @@ window.enterNightMode = async xml => {
         const id = elem.id;
         const closed = keyLocations[id];
         let openProp = 255;
+        const isGoal = goal === id;
+
+        console.log("we found a goal", isGoal);
+
+        if (isGoal) {
+          const unlocker = ctx.createImageData(1, 1);
+          unlocker.data[0] = 254;
+          unlocker.data[1] = 3;
+          unlocker.data[2] = 255;
+          unlocker.data[3] = 255;
+
+          ctx.putImageData(
+            unlocker,
+            Math.round((elem.x + offset.x + elem.width / 2) * scaleFactor),
+            Math.round((elem.y + offset.y + elem.height / 2) * scaleFactor)
+          );
+        }
 
         if (closed) {
           openProp = blockIdx++;

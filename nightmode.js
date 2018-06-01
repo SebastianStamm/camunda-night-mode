@@ -14,7 +14,9 @@ import intro from "./intro.js";
 const scaleFactor = 0.2;
 
 window.enterNightMode = async xml => {
-  // await intro();
+  if (!window.skipIntro) {
+    await intro();
+  }
   window.roomLabelMap = [];
   const viewer = new BpmnJS();
   viewer.importXML(xml, () => {

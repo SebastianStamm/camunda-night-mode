@@ -21,7 +21,7 @@ function makeNight() {
 function sayPowerCritical() {
   const container = document.createElement("div");
   container.innerHTML =
-    '<div style="position: fixed; top: 20px; right: 20px; pointer-events: none; width: 350px; height: 100px; background-color: lightblue; border: 2px solid deepskyblue; z-index: 9001; padding: 21px; opacity: 0; transition: 0.2s; font-size: 1.4em; transform: scale(1.5); transform-origin: top right;"><span style="float:left; font-size: 70px; margin-top: -22px; margin-right: 20px;">⚠</span><b>Warning!</b><br/> Power Level Critical!</div>';
+    '<div style="position: fixed; bottom: 20px; right: 20px; pointer-events: none; width: 350px; height: 100px; background-color: lightblue; border: 2px solid deepskyblue; z-index: 9001; padding: 21px; opacity: 0; transition: 0.2s; font-size: 1.4em; transform: scale(1.5); transform-origin: bottom right;"><span style="float:left; font-size: 70px; margin-top: -22px; margin-right: 20px;">⚠</span><b>Warning!</b><br/> Power Level Critical!</div>';
 
   document.body.appendChild(container);
 
@@ -40,13 +40,13 @@ function startShaking() {
     const offY = ~~(Math.random() * intensity - intensity / 2);
 
     let zoom = 1;
-    if (intensity > 60) {
-      zoom += intensity - 60;
+    if (intensity > 40) {
+      zoom += intensity - 40;
     }
 
     document.body.style.transform = `scale(${zoom}) translate(${offX}px, ${offY}px)`;
 
-    if (intensity > 80) {
+    if (intensity > 60) {
       document.body.style.transform = "";
     } else {
       requestAnimationFrame(animate);
@@ -129,7 +129,9 @@ function removeBlackscreen() {
   const blackScreen = document.getElementById("blackscreen");
 
   blackScreen.parentNode.removeChild(blackScreen);
-  window.powerCriticalContainer.parentNode.removeChild(window.powerCriticalContainer);
+  window.powerCriticalContainer.parentNode.removeChild(
+    window.powerCriticalContainer
+  );
   window.emergencyContainer.parentNode.removeChild(window.emergencyContainer);
 }
 
@@ -204,7 +206,9 @@ function sayEnteringEmergency() {
   document.body.appendChild(container);
 
   setInterval(() => {
-    container.children[0].style.opacity = +!(container.children[0].style.opacity === '1');
+    container.children[0].style.opacity = +!(
+      container.children[0].style.opacity === "1"
+    );
   }, 500);
 
   window.emergencyContainer = container;
@@ -215,17 +219,30 @@ export default function intro() {
     // step 1
     makeNight();
 
-    const introAnimation = () => {
-      document.removeEventListener("keydown", introAnimation);
-      sayPowerCritical();
-      window.setTimeout(startShaking, 6000);
-      window.setTimeout(sayEnteringEmergency, 8000);
-      window.setTimeout(fadeToBlack, 13000);
-      window.setTimeout(restoreBackground, 14100);
-      window.setTimeout(showCamundaPresents, 14300);
-      window.setTimeout(showNightmodeSplash, 20300);
-      window.setTimeout(resolve, 29300);
-      window.setTimeout(removeBlackscreen, 40000);
+    const animationStep2 = ({ key }) => {
+      if (key === "F2") {
+        document.removeEventListener("keydown", animationStep2);
+        window.setTimeout(sayEnteringEmergency, 6000);
+        window.setTimeout(startShaking, 8000);
+        window.setTimeout(fadeToBlack, 13000);
+        window.setTimeout(restoreBackground, 14100);
+        window.setTimeout(showCamundaPresents, 14300);
+        window.setTimeout(showNightmodeSplash, 20300);
+        window.setTimeout(resolve, 29300);
+        window.setTimeout(removeBlackscreen, 40000);
+      }
+    };
+
+    const introAnimation = ({ key }) => {
+      if (key === "F2") {
+        document.removeEventListener("keydown", introAnimation);
+
+        window.setTimeout(() => {
+          sayPowerCritical();
+          document.addEventListener("keydown", animationStep2);
+        }, 4000);
+      }
+      return;
     };
 
     document.addEventListener("keydown", introAnimation);

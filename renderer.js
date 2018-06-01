@@ -244,7 +244,8 @@ export default {
           // showUnlockNotification(window.roomIdToElementMap[change.id]);
           updateGameProgression(
             --window.locationsToUnlock,
-            window.roomIdToElementMap[change.id]
+            window.roomIdToElementMap[change.id],
+            state.openDoors
           );
         }
       }
@@ -408,7 +409,7 @@ export default {
   }
 };
 
-function updateGameProgression(state, unlockedRoom) {
+function updateGameProgression(state, unlockedRoom, doors) {
   if (state === 6) {
     // initial state, ensure dark and flashlight
     const flashlight = document.createElement("div");
@@ -506,6 +507,12 @@ function updateGameProgression(state, unlockedRoom) {
         );
       })
       .start();
+  } else if (state === 1) {
+    document.getElementById("currentTask").textContent =
+      "Escape the Simulation!";
+    for (let i = 1; i < 20; i++) {
+      doors.push(i);
+    }
   }
 
   narrate(state, unlockedRoom);
@@ -714,6 +721,22 @@ function narrate(state, unlockedRoom) {
         type +
         " " +
         name;
+
+      showUnlockNotification(str);
+      const utterThis = new SpeechSynthesisUtterance(str);
+
+      utterThis.voice = synth
+        .getVoices()
+        .find(({ name }) => name === "Google UK English Female");
+      utterThis.pitch = 1;
+      utterThis.rate = 1;
+
+      synth.speak(utterThis);
+      break;
+    }
+
+    case 1: {
+      const str = "Doors opened.";
 
       showUnlockNotification(str);
       const utterThis = new SpeechSynthesisUtterance(str);

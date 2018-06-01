@@ -23,6 +23,8 @@ export const floorFragment = `
   uniform sampler2D uColors;
   uniform float uState;
   uniform float uAnimationProgress;
+  uniform float uBlackBorder;
+  uniform float uIsRoof;
 
   ${THREE.ShaderChunk["common"]}
   ${THREE.ShaderChunk["fog_pars_fragment"]}
@@ -36,6 +38,11 @@ export const floorFragment = `
       } else {
         color = vec4(0.3, 0.3, 0.3, 1.0);
       }
+      if(uBlackBorder == 1.0 && uIsRoof == 0.0) {
+        color = vec4(0.0,0.0,0.0,1.0);
+      }
+    } else if(uBlackBorder == 1.0 && uIsRoof == 1.0) {
+      color = vec4(1.0);
     }
 
     gl_FragColor = color;
@@ -51,6 +58,7 @@ export const wallFragment = `
   uniform vec3 uLight;
   uniform float uState;
   uniform float uAnimationProgress;
+  uniform float overrideAnimation;
 
   ${THREE.ShaderChunk["common"]}
   ${THREE.ShaderChunk["fog_pars_fragment"]}
@@ -65,25 +73,34 @@ export const wallFragment = `
     } else if(uState == 6.0 || uState == 2.0) {
       vec3 baseColor = vec3(0.1);
       vec3 highlightColor = uLight;
+
+      if(overrideAnimation == 1.0) {
+        baseColor = vec3(1.0);
+      }
+
       vec3 color = baseColor;
 
-      float stripeWidth = 1.8;
+      float stripeWidth = 2.0;
 
-      if(4.0 - vPosition.z < stripeWidth) {
+      if(4.0 - vPosition.z < stripeWidth && overrideAnimation == 0.0) {
         color = mix(highlightColor, baseColor, smoothstep(4.0, 4.0 - stripeWidth, vPosition.z));
       }
       if(vPosition.z < stripeWidth) {
         color = mix(highlightColor, baseColor, smoothstep(0.0, stripeWidth, vPosition.z));
       }
 
-      if(uState == 2.0) {
+      if(uState == 2.0 && overrideAnimation == 0.0) {
         color = mix(color, vec3(1.0,1.0,1.0), uAnimationProgress);
         if(vPosition.z > 3.9 || vPosition.z < 0.1) {
           color = mix(vec3(0.7), vec3(0.0), uAnimationProgress);
         }
       } else {
         if(vPosition.z > 3.9 || vPosition.z < 0.1) {
-          color = vec3(0.7);
+          if(overrideAnimation == 1.0) {
+            color = vec3(0.0);
+          } else {
+            color = vec3(0.7);
+          }
         }
       }
 
@@ -104,8 +121,13 @@ export const wallFragment = `
         color = mix(highlightColor, baseColor, smoothstep(4.0, 4.0 - stripeWidth, vPosition.z));
       }
       if(vPosition.z > 3.9 || vPosition.z < 0.1) {
-        color = vec3(0.7);
+        if(overrideAnimation == 1.0) {
+          color = vec3(0.0);
+        } else {
+          color = vec3(0.7);
+        }
       }
+
 
       gl_FragColor = vec4(color, 1.0);
     }

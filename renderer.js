@@ -11,7 +11,8 @@ function createLevel(canvas, scene) {
     {
       uLight: { value: new THREE.Vector3(0.0, 0, 0) },
       uState: { value: window.locationsToUnlock },
-      uAnimationProgress: { value: 0 }
+      uAnimationProgress: { value: 0 },
+      overrideAnimation: { value: 0 }
     }
   ]);
 
@@ -40,7 +41,8 @@ function createLevel(canvas, scene) {
     {
       uColors: { type: "t", value: new THREE.Texture(floorCanvas) },
       uState: { value: window.locationsToUnlock },
-      uAnimationProgress: { value: 0 }
+      uAnimationProgress: { value: 0 },
+      uBlackBorder: { value: 0 }
     }
   ]);
 
@@ -139,13 +141,24 @@ function createLevel(canvas, scene) {
     1,
     1
   );
+  const floormaterial = new THREE.ShaderMaterial({
+    vertexShader: shaders.commonVertex,
+    fragmentShader: shaders.floorFragment.replace(
+      /%CANVAS_SIZE%/g,
+      canvasSize + ".0"
+    ),
+    uniforms: { ...floorShaderUniforms, uIsRoof: { value: 0.0 } },
+    fog: true,
+    side: THREE.DoubleSide
+  });
+
   const floormaterial2 = new THREE.ShaderMaterial({
     vertexShader: shaders.commonVertex,
     fragmentShader: shaders.floorFragment.replace(
       /%CANVAS_SIZE%/g,
       canvasSize + ".0"
     ),
-    uniforms: floorShaderUniforms,
+    uniforms: { ...floorShaderUniforms, uIsRoof: { value: 1.0 } },
     fog: true,
     side: THREE.DoubleSide
   });
@@ -153,7 +166,7 @@ function createLevel(canvas, scene) {
   const floormesh = new THREE.Mesh(floorgeometry2, floormaterial2);
   floormesh.position.set(canvas.width / 2 + 0.5, -canvas.height / 2 - 0.5, 4);
 
-  const floormesh2 = new THREE.Mesh(floorgeometry2, floormaterial2);
+  const floormesh2 = new THREE.Mesh(floorgeometry2, floormaterial);
   floormesh2.position.set(
     canvas.width / 2 + 0.5,
     -canvas.height / 2 - 0.5,
@@ -208,6 +221,7 @@ export default {
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.001, 100);
 
     window.nightCamera = camera;
+    window.canDance = false;
     const gameDone = false;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -273,6 +287,38 @@ export default {
             document.exitPointerLock();
             document.webkitExitFullscreen();
           }, 3100);
+        }
+        if (change.action === "activateDisco") {
+          function getRndColor() {
+            var r = (255 * Math.random()) | 0,
+              g = (255 * Math.random()) | 0,
+              b = (255 * Math.random()) | 0;
+            return "rgb(" + r + "," + g + "," + b + ")";
+          }
+          const updateFloorLights = () => {
+            const ctx = window.nightFloorCtx;
+
+            for (let i = 0; i < window.nightFloorCanvasSize - 1; i++) {
+              for (let j = 0; j < window.nightFloorCanvasSize - 1; j++) {
+                ctx.fillStyle = getRndColor();
+                ctx.fillRect(i, j, 1, 1);
+              }
+            }
+            new TWEEN.Tween(window.wallShaderUniforms.uLight.value)
+              .to(
+                { x: Math.random(), y: Math.random(), z: Math.random() },
+                1000
+              )
+              .easing(TWEEN.Easing.Linear.None)
+              .start();
+          };
+          window.discoFloorInterval = window.setInterval(
+            updateFloorLights,
+            1000
+          );
+          updateFloorLights();
+          window.wallShaderUniforms.overrideAnimation.value = 1;
+          window.floorShaderUniforms.uBlackBorder.value = 1;
         }
       }
     }
@@ -626,46 +672,88 @@ function showUnlockNotification(text) {
 
 window.nightOpenModal = function(type, id) {
   if (type === "operationSelection") {
-    const container = document.createElement("div");
-    container.innerHTML = `<div style="width: 90vw; height: 90vh; position: absolute; top: 5vh; left: 5vw; border: 2px solid black; z-index: 1000002; background-color: #282828; color: #0f6; font-family: monospace;">
-    <center>
-      <span style="font-size: 5em">Process Operation Control</span>
-      <div class="termination" style="width: 30vw; position: absolute; bottom: 2em; top: 9em; left: 10vw; border: 3px solid black; background-image: url(/camunda/app/cockpit/scripts/nightmode/termination/splash.jpg); background-size: 100% auto; background-repeat: no-repeat; background-color: black; cursor: pointer;"></div>
-      <div class="nightlight" style="width: 30vw; position: absolute; bottom: 2em; top: 9em; right: 10vw; border: 3px solid black; cursor: pointer; background-color: #242;">
-        <span style="font-size: 14em;">💡</span>
-        <br/>
-        <br/>
-        <br/>
-        <span style="font-size: 4em;">Restore Light</span>
-      </div>
-    </center>
-  </div>
-  `;
-    document.body.appendChild(container);
+    if (!window.canDance) {
+      const container = document.createElement("div");
+      container.innerHTML = `<div style="width: 90vw; height: 90vh; position: absolute; top: 5vh; left: 5vw; border: 2px solid black; z-index: 1000002; background-color: #282828; color: #0f6; font-family: monospace;">
+      <center>
+        <span style="font-size: 5em">Process Operation Control</span>
+        <div class="termination" style="width: 30vw; position: absolute; bottom: 2em; top: 9em; left: 10vw; border: 3px solid black; background-image: url(/camunda/app/cockpit/scripts/nightmode/termination/splash.jpg); background-size: 100% auto; background-repeat: no-repeat; background-color: black; cursor: pointer;"></div>
+        <div class="nightlight" style="width: 30vw; position: absolute; bottom: 2em; top: 9em; right: 10vw; border: 3px solid black; cursor: pointer; background-color: #242;">
+          <span style="font-size: 14em;">💡</span>
+          <br/>
+          <br/>
+          <br/>
+          <span style="font-size: 4em;">Restore Light</span>
+        </div>
+      </center>
+    </div>
+    `;
+      document.body.appendChild(container);
 
-    document.exitPointerLock();
+      document.exitPointerLock();
 
-    container.querySelector(".termination").addEventListener("click", () => {
-      document.body.removeChild(container);
-      playTermination();
-    });
-
-    container.querySelector(".nightlight").addEventListener("click", () => {
-      document.body.removeChild(container);
-      window.updateState({
-        action: "openDoor",
-        id
+      container.querySelector(".termination").addEventListener("click", () => {
+        document.body.removeChild(container);
+        playTermination();
       });
-      window.nightRequestPointerLock();
-    });
 
-    container.addEventListener("click", evt => {
-      evt.stopPropagation();
-    });
-    document.body.addEventListener("click", () => {
-      document.body.removeChild(container);
-      window.nightRequestPointerLock();
-    });
+      container.querySelector(".nightlight").addEventListener("click", () => {
+        document.body.removeChild(container);
+        window.updateState({
+          action: "openDoor",
+          id
+        });
+        window.nightRequestPointerLock();
+      });
+
+      container.addEventListener("click", evt => {
+        evt.stopPropagation();
+      });
+      document.body.addEventListener("click", () => {
+        document.body.removeChild(container);
+        window.nightRequestPointerLock();
+      });
+    } else {
+      const container = document.createElement("div");
+      container.innerHTML = `<div style="width: 90vw; height: 90vh; position: absolute; top: 5vh; left: 5vw; border: 2px solid black; z-index: 1000002; background-color: #282828; color: #0f6; font-family: monospace;">
+      <center>
+        <span style="font-size: 5em">Process Operation Control</span>
+        <div class="termination" style="width: 30vw; position: absolute; bottom: 2em; top: 9em; left: 10vw; border: 3px solid black; background-image: url(/camunda/app/cockpit/scripts/nightmode/termination/splash.jpg); background-size: 100% auto; background-repeat: no-repeat; background-color: black; cursor: pointer;"></div>
+        <div class="nightlight" style="width: 30vw; position: absolute; bottom: 2em; top: 9em; right: 10vw; border: 3px solid black; cursor: pointer; background-color: #242;">
+          <span style="font-size: 14em;">🕺</span>
+          <br/>
+          <br/>
+          <br/>
+          <span style="font-size: 4em;">Disco Mode</span>
+        </div>
+      </center>
+    </div>
+    `;
+      document.body.appendChild(container);
+
+      document.exitPointerLock();
+
+      container.querySelector(".termination").addEventListener("click", () => {
+        document.body.removeChild(container);
+        playTermination();
+      });
+
+      container.querySelector(".nightlight").addEventListener("click", () => {
+        document.body.removeChild(container);
+        window.updateState({
+          action: "activateDisco"
+        });
+        window.nightRequestPointerLock();
+      });
+
+      container.addEventListener("click", evt => {
+        evt.stopPropagation();
+      });
+      document.body.addEventListener("click", () => {
+        document.body.removeChild(container);
+        window.nightRequestPointerLock();
+      });
+    }
   }
 };
 
@@ -742,6 +830,7 @@ function narrate(state, unlockedRoom) {
       break;
     }
     case 2: {
+      window.canDance = true;
       const str =
         "Light restored. To leave the Emergency Energy Restoration Procedure, override the door control component in " +
         type +

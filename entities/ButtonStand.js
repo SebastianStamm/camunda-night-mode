@@ -4,6 +4,7 @@ export default class ButtonStand {
   constructor(id) {
     this.id = id;
     this.active = false;
+    this.isSpecial = false;
 
     this.mesh = new THREE.Mesh(
       new THREE.CubeGeometry(0.2, 0.2, 2.8),
@@ -22,7 +23,8 @@ export default class ButtonStand {
     );
     this.mesh.onClick = (evt, mouseEvt) => {
       if (evt.distance < 5 && evt.point.z > 1.2 && !this.active) {
-        if (window.locationsToUnlock === 4) {
+        if (window.locationsToUnlock === 4 || this.isSpecial) {
+          this.isSpecial = true;
           window.nightOpenModal("operationSelection", id);
           mouseEvt.stopPropagation();
         } else {

@@ -290,20 +290,31 @@ export default {
         }
         if (change.action === "activateDisco") {
           function getRndColor() {
-            var r = (255 * Math.random()) | 0,
-              g = (255 * Math.random()) | 0,
-              b = (255 * Math.random()) | 0;
-            return "rgb(" + r + "," + g + "," + b + ")";
+            return "hsl(" + ~~(Math.random() * 360) + ",100%,50%)";
           }
           const updateFloorLights = () => {
             const ctx = window.nightFloorCtx;
 
-            for (let i = 0; i < window.nightFloorCanvasSize - 1; i++) {
-              for (let j = 0; j < window.nightFloorCanvasSize - 1; j++) {
-                ctx.fillStyle = getRndColor();
-                ctx.fillRect(i, j, 1, 1);
-              }
+            const gradient = ctx.createLinearGradient(
+              0,
+              ~~(Math.random() * window.nightFloorCanvasSize),
+              window.nightFloorCanvasSize,
+              ~~(Math.random() * window.nightFloorCanvasSize)
+            );
+            const stepSize = 4 / window.nightFloorCanvasSize;
+
+            for (let i = 0; i <= 1; i += stepSize) {
+              gradient.addColorStop(i, getRndColor());
             }
+
+            ctx.fillStyle = gradient;
+            ctx.fillRect(
+              0,
+              0,
+              window.nightFloorCanvasSize,
+              window.nightFloorCanvasSize
+            );
+
             new TWEEN.Tween(window.wallShaderUniforms.uLight.value)
               .to(
                 { x: Math.random(), y: Math.random(), z: Math.random() },

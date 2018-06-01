@@ -31,7 +31,7 @@ export const floorFragment = `
     vec4 color = texture2D(uColors, vec2(floor(vPosition.x + 0.5) / %CANVAS_SIZE%, 1.0 - floor(-vPosition.y + 0.5) / %CANVAS_SIZE%));
     float lineThickness = 0.02;
     if(fract(vPosition.x + 0.5) < lineThickness || fract(vPosition.x + 0.5) > 1.0 - lineThickness || fract(vPosition.y + 0.5) < lineThickness || fract(vPosition.y + 0.5) > 1.0 - lineThickness) {
-      if(uState == 3.0) {
+      if(uState == 2.0) {
         color = vec4(mix(vec3(0.3), vec3(0.7), uAnimationProgress), 1.0);
       } else {
         color = vec4(0.3, 0.3, 0.3, 1.0);
@@ -62,7 +62,7 @@ export const wallFragment = `
       } else {
         gl_FragColor = vec4(0.1,0.1,0.1,1.0);
       }
-    } else if(uState == 6.0 || uState == 3.0) {
+    } else if(uState == 6.0 || uState == 2.0) {
       vec3 baseColor = vec3(0.1);
       vec3 highlightColor = uLight;
       vec3 color = baseColor;
@@ -76,7 +76,7 @@ export const wallFragment = `
         color = mix(highlightColor, baseColor, smoothstep(0.0, stripeWidth, vPosition.z));
       }
 
-      if(uState == 3.0) {
+      if(uState == 2.0) {
         color = mix(color, vec3(1.0,1.0,1.0), uAnimationProgress);
         if(vPosition.z > 3.9 || vPosition.z < 0.1) {
           color = mix(vec3(0.7), vec3(0.0), uAnimationProgress);
@@ -133,7 +133,7 @@ export const buttonStandFragment = `
       }
     }
 
-    if(uState <= 3.0) {
+    if(uState <= 2.0) {
       color = mix(color, vec3(1.0), 0.5);
     }
     gl_FragColor = vec4(color, 1.0);

@@ -409,7 +409,7 @@ export default {
 };
 
 function updateGameProgression(state, unlockedRoom) {
-  if (state === 7) {
+  if (state === 6) {
     // initial state, ensure dark and flashlight
     const flashlight = document.createElement("div");
     flashlight.style.position = "fixed";
@@ -428,7 +428,7 @@ function updateGameProgression(state, unlockedRoom) {
     document.body.appendChild(flashlight);
     document.getElementById("currentTask").textContent =
       "Restore Emergency Lighting";
-  } else if (state === 6) {
+  } else if (state === 5) {
     // emergency lighting is restored
     window.wallShaderUniforms.uState.value = state;
 
@@ -446,11 +446,11 @@ function updateGameProgression(state, unlockedRoom) {
 
     document.getElementById("currentTask").textContent =
       "Activate Process Utility";
-  } else if (state === 5) {
-    document.getElementById("currentTask").textContent = "Access Control Panel";
   } else if (state === 4) {
-    document.getElementById("currentTask").textContent = "Turn the Light On!";
+    document.getElementById("currentTask").textContent = "Access Control Panel";
   } else if (state === 3) {
+    document.getElementById("currentTask").textContent = "Turn the Light On!";
+  } else if (state === 2) {
     // turn the light on fully
     document.getElementById("currentTask").textContent =
       "Restore Door Control System";
@@ -671,7 +671,7 @@ function narrate(state, unlockedRoom) {
   const name = bo.name;
 
   switch (state) {
-    case 5: {
+    case 4: {
       const str =
         "Process Utility Activated! Please Proceed to the Control Panel in " +
         type +
@@ -689,7 +689,7 @@ function narrate(state, unlockedRoom) {
       synth.speak(utterThis);
       break;
     }
-    case 4: {
+    case 3: {
       const str =
         "Light Restoration Procedure started. Turn on the Light in " +
         type +
@@ -708,7 +708,7 @@ function narrate(state, unlockedRoom) {
       synth.speak(utterThis);
       break;
     }
-    case 3: {
+    case 2: {
       const str =
         "Light restored. To leave the Emergency Energy Restoration Procedure, override the door control component in " +
         type +

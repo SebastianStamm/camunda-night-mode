@@ -41,20 +41,12 @@ define(["angular"], function(angular) {
   TWEEN.setAttribute("type", "application/javascript");
   TWEEN.setAttribute("src", "/camunda/app/cockpit/scripts/nightmode/tween.js");
 
-  const Howler = document.createElement("script");
-  Howler.setAttribute("type", "application/javascript");
-  Howler.setAttribute(
-    "src",
-    "/camunda/app/cockpit/scripts/nightmode/howler.min.js"
-  );
-
   const font = document.createElement("link");
   font.setAttribute("href", "https://fonts.googleapis.com/css?family=Iceland");
   font.setAttribute("rel", "stylesheet");
 
   document.head.appendChild(THREE);
   document.head.appendChild(TWEEN);
-  document.head.appendChild(Howler);
   document.head.appendChild(font);
 
   window.setTimeout(() => document.head.appendChild(nightModeScript), 2500);
